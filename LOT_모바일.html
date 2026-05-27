@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>LOT 스캔</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+  :root{--navy:#0d1b3e;--red:#e53935;--blue:#1565c0;--green:#2e7d32;--gold:#f9a825;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Noto Sans KR',sans-serif;background:#0d1b3e;color:white;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* 헤더 */
+  .hdr{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .hdr-title{font-size:17px;font-weight:900;}
+  .hdr-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+  .conn-dot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block;margin-right:5px;}
+  .conn-dot.ok{background:#4caf50;box-shadow:0 0 6px #4caf50;}
+  .conn-dot.err{background:var(--red);}
+
+  /* 타입 선택 버튼 */
+  .type-row{display:flex;gap:12px;padding:0 16px 14px;flex-shrink:0;}
+  .type-btn{flex:1;padding:16px 8px;border-radius:16px;border:2.5px solid;font-size:16px;font-weight:900;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .2s;text-align:center;}
+  .type-btn.out{border-color:var(--red);color:var(--red);background:rgba(229,57,53,.08);}
+  .type-btn.out.active{background:var(--red);color:white;box-shadow:0 4px 20px rgba(229,57,53,.4);}
+  .type-btn.in{border-color:#42a5f5;color:#42a5f5;background:rgba(66,165,245,.08);}
+  .type-btn.in.active{background:#1565c0;color:white;box-shadow:0 4px 20px rgba(21,101,192,.4);}
+
+  /* 카메라 영역 */
+  .cam-area{flex:1;position:relative;background:#000;overflow:hidden;}
+  #video{width:100%;height:100%;object-fit:cover;display:block;}
+  .cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+  .scan-frame{width:220px;height:220px;position:relative;}
+  .scan-frame::before,.scan-frame::after{content:'';position:absolute;width:40px;height:40px;border-color:var(--gold);border-style:solid;}
+  .scan-frame::before{top:0;left:0;border-width:4px 0 0 4px;border-radius:4px 0 0 0;}
+  .scan-frame::after{bottom:0;right:0;border-width:0 4px 4px 0;border-radius:0 0 4px 0;}
+  .scan-corner2,.scan-corner3{position:absolute;width:40px;height:40px;border-color:var(--gold);border-style:solid;}
+  .scan-corner2{top:0;right:0;border-width:4px 4px 0 0;border-radius:0 4px 0 0;}
+  .scan-corner3{bottom:0;left:0;border-width:0 0 4px 4px;border-radius:0 0 0 4px;}
+  .scan-line{position:absolute;left:10px;right:10px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:scanMove 2s linear infinite;top:50%;}
+  @keyframes scanMove{0%{transform:translateY(-100px);}100%{transform:translateY(100px);}}
+  .cam-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.6);}
+
+  /* 수동 입력 토글 */
+  .manual-toggle{padding:10px 16px;flex-shrink:0;}
+  .btn-manual-toggle{width:100%;padding:11px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.7);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+
+  /* 수동 입력 패널 */
+  .manual-panel{padding:0 16px 12px;display:none;flex-shrink:0;}
+  .manual-panel.show{display:block;}
+  .mp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .mp-group{display:flex;flex-direction:column;gap:3px;}
+  .mp-group.full{grid-column:1/-1;}
+  .mp-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);}
+  .mp-input{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:8px;padding:9px 12px;color:white;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;}
+  .mp-input:focus{border-color:var(--gold);}
+  .mp-input::placeholder{color:rgba(255,255,255,.3);}
+  .btn-manual-reg{width:100%;padding:13px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:4px;}
+  .btn-manual-reg.out{background:var(--red);}
+  .btn-manual-reg.in{background:var(--blue);}
+
+  /* 결과 모달 */
+  .result-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:flex-end;justify-content:center;}
+  .result-modal.show{display:flex;}
+  .result-sheet{background:#1a2340;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 36px;animation:slideUp .3s ease;}
+  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  .rs-icon{font-size:48px;text-align:center;margin-bottom:12px;}
+  .rs-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px;}
+  .rs-title.out{color:var(--red);}
+  .rs-title.in{color:#42a5f5;}
+  .rs-info{background:rgba(255,255,255,.07);border-radius:12px;padding:16px;margin:14px 0;}
+  .rs-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;border-bottom:1px solid rgba(255,255,255,.08);}
+  .rs-row:last-child{border-bottom:none;}
+  .rs-key{color:rgba(255,255,255,.55);}
+  .rs-val{font-weight:700;}
+  .rs-btns{display:flex;gap:10px;margin-top:14px;}
+  .rs-btn-cancel{flex:1;padding:14px;background:rgba(255,255,255,.1);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+  .rs-btn-ok{flex:2;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+  .rs-btn-ok.out{background:var(--red);}
+  .rs-btn-ok.in{background:var(--blue);}
+
+  /* 토스트 */
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;}
+
+  /* 하단 최근이력 */
+  .recent-bar{background:rgba(0,0,0,.4);padding:8px 16px;flex-shrink:0;max-height:90px;overflow-y:auto;}
+  .recent-title{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;letter-spacing:1px;}
+  .recent-item{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+  .ri-lot{color:rgba(255,255,255,.8);font-weight:700;}
+  .ri-type-out{color:var(--red);font-weight:700;}
+  .ri-type-in{color:#42a5f5;font-weight:700;}
+  .ri-time{color:rgba(255,255,255,.35);}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">📦 LOT 스캔</div>
+    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">서버 연결 중...</span></div>
+  </div>
+  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">호연테크<br>외주 입출고</div>
+</div>
+
+<!-- 타입 선택 -->
+<div class="type-row">
+  <button class="type-btn out active" id="btn-out" onclick="setType('out')">🔴 출 고</button>
+  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">🔵 입 고</button>
+</div>
+
+<!-- 카메라 -->
+<div class="cam-area">
+  <video id="video" playsinline autoplay muted></video>
+  <div class="cam-overlay">
+    <div class="scan-frame">
+      <div class="scan-corner2"></div>
+      <div class="scan-corner3"></div>
+      <div class="scan-line"></div>
+    </div>
+  </div>
+  <div class="cam-hint">QR 코드를 사각형 안에 맞춰주세요</div>
+</div>
+
+<!-- 수동 입력 토글 -->
+<div class="manual-toggle">
+  <button class="btn-manual-toggle" onclick="toggleManual()">✏️ QR 없이 직접 입력</button>
+</div>
+
+<!-- 수동 입력 패널 -->
+<div class="manual-panel" id="manual-panel">
+  <div class="mp-grid">
+    <div class="mp-group full"><div class="mp-label">LOT 번호</div>
+      <input class="mp-input" id="m-lot" placeholder="26-5M-1W-05-01" autocomplete="off"></div>
+    <div class="mp-group full"><div class="mp-label">품명</div>
+      <input class="mp-input" id="m-product" placeholder="R4T-16P-S-ASSY"></div>
+    <div class="mp-group full"><div class="mp-label">수량 (EA)</div>
+      <input class="mp-input" type="number" id="m-qty" placeholder="300"></div>
+  </div>
+  <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">🔴 출고 등록</button>
+</div>
+
+<!-- 최근 이력 -->
+<div class="recent-bar">
+  <div class="recent-title">최근 등록</div>
+  <div id="recent-list"></div>
+</div>
+
+<!-- 결과 모달 -->
+<div class="result-modal" id="result-modal">
+  <div class="result-sheet">
+    <div class="rs-icon" id="rs-icon">📤</div>
+    <div class="rs-title out" id="rs-title">출고 등록</div>
+    <div class="rs-info" id="rs-info"></div>
+    <div class="rs-btns">
+      <button class="rs-btn-cancel" onclick="cancelScan()">취소</button>
+      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">✅ 등록 완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<!-- jsQR -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxPgyY3XlXkorq_Sqj6nsfCT4oZJpBFZ6-hHnYKf_Mv9ptR15vimHwMPw5peCQ0zMNY/exec';
+let scanType = 'out';
+let scanning = true;
+let pendingData = null;
+let recentLocal = [];
+
+// ── 서버 연결 확인 ──
+async function checkConn() {
+  try {
+    const r = await fetch(API+'?action=get');
+    if(r.ok){ setConn(true); loadRecent(); }
+    else setConn(false);
+  } catch { setConn(false); }
+}
+function setConn(ok){
+  document.getElementById('conn-dot').className='conn-dot '+(ok?'ok':'err');
+  document.getElementById('conn-status').textContent=ok?'서버 연결됨':'서버 연결 실패';
+}
+checkConn();
+setInterval(checkConn, 10000);
+
+// ── 타입 선택 ──
+function setType(t){
+  scanType=t;
+  document.getElementById('btn-out').classList.toggle('active',t==='out');
+  document.getElementById('btn-in').classList.toggle('active',t==='in');
+  const mb=document.getElementById('btn-manual-reg');
+  mb.className='btn-manual-reg '+t;
+  mb.textContent=t==='out'?'🔴 출고 등록':'🔵 입고 등록';
+}
+
+// ── 카메라 ──
+const video = document.getElementById('video');
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+
+navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+  .then(stream=>{ video.srcObject=stream; video.play(); requestAnimationFrame(tick); })
+  .catch(()=>{ document.querySelector('.cam-hint').textContent='카메라 권한을 허용해주세요'; });
+
+function tick(){
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
+    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    ctx.drawImage(video,0,0);
+    if(scanning){
+      const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+      if(code){ onQR(code.data); }
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function onQR(raw){
+  scanning=false;
+  let data={};
+  try{ data=JSON.parse(raw); }
+  catch{ data={lot:raw.trim(),product:'',qty:0}; }
+  pendingData=data;
+  showResult(data);
+}
+
+// ── 결과 모달 ──
+function showResult(data){
+  const isOut=scanType==='out';
+  document.getElementById('rs-icon').textContent=isOut?'📤':'📥';
+  const title=document.getElementById('rs-title');
+  title.textContent=isOut?'출고 등록 확인':'입고 등록 확인';
+  title.className='rs-title '+(isOut?'out':'in');
+  document.getElementById('rs-info').innerHTML=`
+    <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">품명</span><span class="rs-val">${data.product||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">수량</span><span class="rs-val">${data.qty||'—'} EA</span></div>
+    <div class="rs-row"><span class="rs-key">구분</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'출고':'입고'}</span></div>`;
+  const ok=document.getElementById('rs-btn-ok');
+  ok.className='rs-btn-ok '+(isOut?'out':'in');
+  ok.textContent='✅ '+( isOut?'출고':'입고')+' 등록';
+  document.getElementById('result-modal').classList.add('show');
+}
+
+function cancelScan(){
+  document.getElementById('result-modal').classList.remove('show');
+  pendingData=null;
+  setTimeout(()=>scanning=true, 1500);
+}
+
+async function confirmReg(){
+  if(!pendingData) return;
+  const lot     = pendingData.lot     || '';
+  const product = pendingData.product || '';
+  const qty     = pendingData.qty     || 0;
+  if(!lot){ showToast('⚠️ LOT 정보 없음'); return; }
+  try{
+    showToast('⏳ 등록 중...');
+    const params = new URLSearchParams({
+      action:'write', lot, product, qty, type:scanType, worker:'', note:''
+    });
+    const r = await fetch(API + '?' + params.toString());
+    const result = await r.json();
+    if(result.ok){
+      document.getElementById('result-modal').classList.remove('show');
+      showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
+      loadRecent();
+      pendingData=null;
+      setTimeout(()=>scanning=true, 2000);
+    } else {
+      showToast('❌ 오류: '+(result.error||''));
+      scanning=true;
+    }
+  } catch(e) {
+    showToast('❌ 네트워크 오류');
+    scanning=true;
+  }
+}
+
+// ── 수동 입력 ──
+function toggleManual(){
+  const p=document.getElementById('manual-panel');
+  p.classList.toggle('show');
+}
+async function manualReg(){
+  const lot    =document.getElementById('m-lot').value.trim().toUpperCase();
+  const product=document.getElementById('m-product').value.trim();
+  const qty    =parseInt(document.getElementById('m-qty').value)||0;
+  if(!lot||!product||!qty){ showToast('⚠️ LOT / 품명 / 수량 필수'); return; }
+  try{
+    showToast('⏳ 등록 중...');
+    const params=new URLSearchParams({action:'write',lot,product,qty,type:scanType,worker:'',note:''});
+    const r=await fetch(API+'?'+params.toString());
+    const result=await r.json();
+    if(result.ok){ showToast(scanType==='out'?'✅ 출고 등록':'✅ 입고 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
+    else showToast('❌ 서버 오류');
+  } catch { showToast('❌ 네트워크 오류'); }
+}
+
+// ── 최근 이력 ──
+async function loadRecent(){
+  try{
+    const r=await fetch(API+'?action=get');
+    const data=await r.json();
+    const recent=data.slice(-5).reverse();
+    document.getElementById('recent-list').innerHTML=recent.map(x=>`
+      <div class="recent-item">
+        <span class="ri-lot">${x.lot}</span>
+        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'출고':'입고'}</span>
+        <span class="ri-time">${x.date.slice(5,16)}</span>
+      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">없음</div>';
+  } catch {}
+}
+
+// ── 토스트 ──
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
