@@ -296,21 +296,35 @@ tbody tr:hover td{background:#f5f7ff;}
             <div style="margin-bottom:6px;">
               <div style="font-size:11px;font-weight:700;color:#546e7a;cursor:pointer;margin-bottom:3px;" onclick="toggleBWtGroup('bolt')">▶ 볼트</div>
               <div id="bwt-group-bolt" style="display:none;flex-wrap:wrap;gap:5px;padding-left:8px;">
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-NI" onchange="onBWtChange()"> 3X6(NI)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-R" onchange="onBWtChange()"> 3X6(R)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-G" onchange="onBWtChange()"> 3X6(G)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-BK" onchange="onBWtChange()"> 3X6(BK)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-HT" onchange="onBWtChange()"> 3X6(HT)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-NI" onchange="onBWtChange()"> 3X7(NI)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-R" onchange="onBWtChange()"> 3X7(R)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-BK" onchange="onBWtChange()"> 3X7(BK)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-NI" onchange="onBWtChange()"> 3X10(NI)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-R" onchange="onBWtChange()"> 3X10(R)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-BK" onchange="onBWtChange()"> 3X10(BK)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-OHT" onchange="onBWtChange()"> 3X10 오형(NI)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-NI" onchange="onBWtChange()"> 3.5X7(NI)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-R" onchange="onBWtChange()"> 3.5X7(R)</label>
-                <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-BK" onchange="onBWtChange()"> 3.5X7(BK)</label>
+                <div style="width:100%;font-size:10px;color:#aaa;margin-bottom:2px;">— 3*10 —</div>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*10-OH(NI)" onchange="onBWtChange()"> 3*10 OH(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*10(NI)" onchange="onBWtChange()"> 3*10(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*10(R)" onchange="onBWtChange()"> 3*10(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*10(BK)" onchange="onBWtChange()"> 3*10(BK)</label>
+                <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 3*6 —</div>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(NI)" onchange="onBWtChange()"> 3*6(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(G)" onchange="onBWtChange()"> 3*6(G)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(R)" onchange="onBWtChange()"> 3*6(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(BK)" onchange="onBWtChange()"> 3*6(BK)</label>
+
+                <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 3*7 —</div>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*7(NI)" onchange="onBWtChange()"> 3*7(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*7(R)" onchange="onBWtChange()"> 3*7(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3*7(BK)" onchange="onBWtChange()"> 3*7(BK)</label>
+                <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 3.5*7 —</div>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(NI)R4P" onchange="onBWtChange()"> 3.5*7(NI) R4P</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(6.5)R4G" onchange="onBWtChange()"> 3.5*7(6.5) R4G</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(8)" onchange="onBWtChange()"> 3.5*7(8)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(NI)" onchange="onBWtChange()"> 3.5*7(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(R)" onchange="onBWtChange()"> 3.5*7(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(BK)" onchange="onBWtChange()"> 3.5*7(BK)</label>
+                <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— PH+PS/W2장 3*6 —</div>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(G)" onchange="onBWtChange()"> PH+PS/W2 3*6(G)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(NI)" onchange="onBWtChange()"> PH+PS/W2 3*6(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(R)" onchange="onBWtChange()"> PH+PS/W2 3*6(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(BK)" onchange="onBWtChange()"> PH+PS/W2 3*6(BK)</label>
+                <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 기타 —</div>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-9.7*9.7" onchange="onBWtChange()"> 거북와서 9.7*9.7</label>
               </div>
             </div>
             <div style="margin-bottom:6px;">

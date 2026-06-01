@@ -192,21 +192,35 @@ input:focus,select:focus{border-color:#1565c0;}
         <div style="margin-bottom:8px;">
           <div style="font-size:11px;font-weight:700;color:#546e7a;margin-bottom:4px;cursor:pointer;" onclick="toggleWtGroup('bolt')">▶ 볼트 (BOLT)</div>
           <div id="wt-group-bolt" style="display:none;flex-wrap:wrap;gap:5px;padding-left:8px;">
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-NI" onchange="onWtChange()"> 3X6(NI)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-R" onchange="onWtChange()"> 3X6(R)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-G" onchange="onWtChange()"> 3X6(G)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-BK" onchange="onWtChange()"> 3X6(BK)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-HT" onchange="onWtChange()"> 3X6(HT)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-NI" onchange="onWtChange()"> 3X7(NI)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-R" onchange="onWtChange()"> 3X7(R)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-BK" onchange="onWtChange()"> 3X7(BK)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-NI" onchange="onWtChange()"> 3X10(NI)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-R" onchange="onWtChange()"> 3X10(R)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-BK" onchange="onWtChange()"> 3X10(BK)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-OHT" onchange="onWtChange()"> 3X10 오형(NI)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-NI" onchange="onWtChange()"> 3.5X7(NI)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-R" onchange="onWtChange()"> 3.5X7(R)</label>
-            <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-BK" onchange="onWtChange()"> 3.5X7(BK)</label>
+            <div style="width:100%;font-size:10px;color:#aaa;margin-bottom:2px;">— 3*10 —</div>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*10-OH(NI)" onchange="onWtChange()"> 3*10 OH(NI)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*10(NI)" onchange="onWtChange()"> 3*10(NI)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*10(R)" onchange="onWtChange()"> 3*10(R)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*10(BK)" onchange="onWtChange()"> 3*10(BK)</label>
+            <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 3*6 —</div>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(NI)" onchange="onWtChange()"> 3*6(NI)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(G)" onchange="onWtChange()"> 3*6(G)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(R)" onchange="onWtChange()"> 3*6(R)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*6(BK)" onchange="onWtChange()"> 3*6(BK)</label>
+
+            <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 3*7 —</div>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*7(NI)" onchange="onWtChange()"> 3*7(NI)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*7(R)" onchange="onWtChange()"> 3*7(R)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3*7(BK)" onchange="onWtChange()"> 3*7(BK)</label>
+            <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 3.5*7 —</div>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(NI)R4P" onchange="onWtChange()"> 3.5*7(NI) R4P</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(6.5)R4G" onchange="onWtChange()"> 3.5*7(6.5) R4G</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(8)" onchange="onWtChange()"> 3.5*7(8)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(NI)" onchange="onWtChange()"> 3.5*7(NI)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(R)" onchange="onWtChange()"> 3.5*7(R)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-3.5*7(BK)" onchange="onWtChange()"> 3.5*7(BK)</label>
+            <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— PH+PS/W2장 3*6 —</div>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(G)" onchange="onWtChange()"> PH+PS/W2 3*6(G)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(NI)" onchange="onWtChange()"> PH+PS/W2 3*6(NI)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(R)" onchange="onWtChange()"> PH+PS/W2 3*6(R)</label>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-PH+PS/W2-3*6(BK)" onchange="onWtChange()"> PH+PS/W2 3*6(BK)</label>
+            <div style="width:100%;font-size:10px;color:#aaa;margin:4px 0 2px;">— 기타 —</div>
+            <label class="wt-chk"><input type="checkbox" value="BOLT-9.7*9.7" onchange="onWtChange()"> 거북와서 9.7*9.7</label>
           </div>
         </div>
 
@@ -390,7 +404,7 @@ function fieldValue(f, fd, tot, num){
     case 'qty':      return fd.qty+' EA';
     case 'date':     return fd.dt;
     case 'worker':   return fd.wrk;
-    case 'worktype': return fd.wt||'—';
+    case 'worktype': return (fd.wt&&fd.wt!=='—') ? fd.wt.split(', ').join(' | ') : '—';
     case 'company':  return f.customText||'호연테크';
     case 'box':      return num+'/'+tot;
     case 'total':    return '총 '+tot+'박스';
@@ -418,9 +432,13 @@ function makeLabelHTML(idx, total){
     } else {
       const val=fieldValue(f,fd,tot,num);
       const isLot=f.id==='lot';
-      fieldsHTML+=`<div class="lf${isLot?' lf-lot':''}" style="left:${left};top:${top};width:${width};height:${height};font-size:${f.fontSize}pt;font-weight:${f.fontWeight};justify-content:${f.align==='left'?'flex-start':f.align==='right'?'flex-end':'center'};${isLot?'background:#f0f4ff;':''}">
+      const isWt=f.id==='worktype';
+      fieldsHTML+=`<div class="lf${isLot?' lf-lot':''}${isWt?' lf-wt':''}" style="left:${left};top:${top};width:${width};height:${height};font-size:${f.fontSize}pt;font-weight:${f.fontWeight};justify-content:${f.align==='left'?'flex-start':f.align==='right'?'flex-end':'center'};${isLot?'background:#f0f4ff;':''}${isWt?'border:1.5px solid #000;background:#fff;flex-direction:column;align-items:flex-start;padding:1px 3px;':''}">
         <span class="lf-key">${f.label}</span>
-        <span style="margin-top:${f.fontSize>0?8:0}px;">${val}</span>
+        ${isWt
+          ? `<span style="font-size:${f.fontSize}pt;font-weight:bold;line-height:1.3;word-break:break-all;">${val}</span>`
+          : `<span style="margin-top:${f.fontSize>0?8:0}px;">${val}</span>`
+        }
       </div>`;
     }
   });
