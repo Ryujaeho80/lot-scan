@@ -74,6 +74,8 @@ tbody tr:hover td{background:#f5f7ff;}
 .mg input,.mg select{border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;}
 .mg input:focus{border-color:var(--blue);}
 .reg-btns{display:flex;gap:10px;}
+.wt-chk{display:flex;align-items:center;gap:4px;font-size:11px;background:#f5f7fa;border:1.5px solid #e0e6ed;border-radius:6px;padding:4px 9px;cursor:pointer;}
+.wt-chk:has(input:checked){background:#e3f2fd;border-color:#1565c0;color:#1565c0;font-weight:700;}
 .btn-out{flex:1;padding:12px;background:var(--red);color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
 .btn-in{flex:1;padding:12px;background:var(--blue);color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
 
@@ -271,14 +273,60 @@ tbody tr:hover td{background:#f5f7ff;}
         <div class="mg"><label>박스당 수량 (EA)</label><input type="number" id="b-qty" value="300" min="1"></div>
         <div class="mg"><label>시작 박스 번호</label><input type="number" id="b-from" value="1" min="1" max="99" oninput="bulkPreview()"></div>
         <div class="mg"><label>끝 박스 번호</label><input type="number" id="b-to" value="5" min="1" max="99" oninput="bulkPreview()"></div>
-        <div class="mg full"><label>작업 형태 <span style="color:#888;font-weight:400;">(복수 선택 가능)</span></label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-RLY" value="RLY"> 릴레이(RLY)</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-BOLT" value="BOLT"> 볼트(BOLT)</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-CBOLT" value="CBOLT"> 커버볼트(CBOLT)</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-BTN" value="BTN"> 버튼(BTN)</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-PIN" value="PIN"> 핀(PIN)</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-LENS" value="LENS"> 렌즈(LENS)</label>
+        <div class="mg full"><label>작업 형태 <span style="color:#888;font-weight:400;">(복수 선택 가능)</span> <span id="b-wt-summary" style="color:#1565c0;font-size:10px;"></span></label>
+          <div style="margin-top:6px;">
+            <div style="margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:700;color:#546e7a;cursor:pointer;margin-bottom:3px;" onclick="toggleBWtGroup('rly')">▶ 릴레이</div>
+              <div id="bwt-group-rly" style="display:none;flex-wrap:wrap;gap:5px;padding-left:8px;">
+                <label class="wt-chk"><input type="checkbox" value="RLY-APAN" onchange="onBWtChange()"> APAN</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-NY" onchange="onBWtChange()"> NY</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-NYP" onchange="onBWtChange()"> NYP</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-G6B" onchange="onBWtChange()"> G6B</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-ALQ" onchange="onBWtChange()"> ALQ</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-G6D" onchange="onBWtChange()"> G6D</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-G6DN" onchange="onBWtChange()"> G6DN</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-G5V" onchange="onBWtChange()"> G5V</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-HF41" onchange="onBWtChange()"> HF41</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-G2R" onchange="onBWtChange()"> G2R+AHN DC24</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-AQG" onchange="onBWtChange()"> AQG22124</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-AQZ202D" onchange="onBWtChange()"> AQZ202D</label>
+                <label class="wt-chk"><input type="checkbox" value="RLY-AQZ202" onchange="onBWtChange()"> AQZ202</label>
+              </div>
+            </div>
+            <div style="margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:700;color:#546e7a;cursor:pointer;margin-bottom:3px;" onclick="toggleBWtGroup('bolt')">▶ 볼트</div>
+              <div id="bwt-group-bolt" style="display:none;flex-wrap:wrap;gap:5px;padding-left:8px;">
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-NI" onchange="onBWtChange()"> 3X6(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-R" onchange="onBWtChange()"> 3X6(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-G" onchange="onBWtChange()"> 3X6(G)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-BK" onchange="onBWtChange()"> 3X6(BK)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X6-HT" onchange="onBWtChange()"> 3X6(HT)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-NI" onchange="onBWtChange()"> 3X7(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-R" onchange="onBWtChange()"> 3X7(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X7-BK" onchange="onBWtChange()"> 3X7(BK)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-NI" onchange="onBWtChange()"> 3X10(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-R" onchange="onBWtChange()"> 3X10(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-BK" onchange="onBWtChange()"> 3X10(BK)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-3X10-OHT" onchange="onBWtChange()"> 3X10 오형(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-NI" onchange="onBWtChange()"> 3.5X7(NI)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-R" onchange="onBWtChange()"> 3.5X7(R)</label>
+                <label class="wt-chk"><input type="checkbox" value="BOLT-35X7-BK" onchange="onBWtChange()"> 3.5X7(BK)</label>
+              </div>
+            </div>
+            <div style="margin-bottom:6px;">
+              <div style="font-size:11px;font-weight:700;color:#546e7a;cursor:pointer;margin-bottom:3px;" onclick="toggleBWtGroup('cbolt')">▶ 커버볼트</div>
+              <div id="bwt-group-cbolt" style="display:none;flex-wrap:wrap;gap:5px;padding-left:8px;">
+                <label class="wt-chk"><input type="checkbox" value="CBOLT-3X10" onchange="onBWtChange()"> 3X10</label>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#546e7a;cursor:pointer;margin-bottom:3px;" onclick="toggleBWtGroup('etc')">▶ 기타</div>
+              <div id="bwt-group-etc" style="display:none;flex-wrap:wrap;gap:5px;padding-left:8px;">
+                <label class="wt-chk"><input type="checkbox" value="BTN" onchange="onBWtChange()"> 버튼(BTN)</label>
+                <label class="wt-chk"><input type="checkbox" value="PIN" onchange="onBWtChange()"> 핀(PIN)</label>
+                <label class="wt-chk"><input type="checkbox" value="LENS" onchange="onBWtChange()"> 렌즈(LENS)</label>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -649,10 +697,25 @@ function bulkPreview(){
   ).join('') + `<div style="margin-top:8px;font-weight:700;color:var(--navy);">총 ${lots.length}건</div>`;
 }
 
+function toggleBWtGroup(id){
+  const el = document.getElementById('bwt-group-'+id);
+  if(!el) return;
+  const isOpen = el.style.display === 'flex';
+  el.style.display = isOpen ? 'none' : 'flex';
+  const title = el.previousElementSibling;
+  if(title) title.textContent = title.textContent.replace(isOpen?'▼':'▶', isOpen?'▶':'▼');
+}
+
+function onBWtChange(){
+  const checked = document.querySelectorAll('[id^="bwt-group-"] input:checked');
+  const el = document.getElementById('b-wt-summary');
+  if(el) el.textContent = checked.length > 0 ? `(선택: ${checked.length}개)` : '';
+}
+
 async function bulkReg(type){
   const lots = getBulkLots();
   if(!lots.length){ showToast('⚠️ 등록할 항목이 없습니다'); return; }
-  const wtChecks = document.querySelectorAll('[id^="bwt-"]:checked');
+  const wtChecks = document.querySelectorAll('[id^="bwt-group-"] input:checked');
   const wt = Array.from(wtChecks).map(c=>c.value).join(', ');
   if(!confirm(`${lots.length}건을 ${type==='out'?'출고':'입고'} 등록하시겠습니까?\n작업형태: ${wt||'없음'}\n\n${lots.map(l=>l.lot).join('\n')}`)) return;
 
