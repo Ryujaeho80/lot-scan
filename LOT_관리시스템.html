@@ -753,11 +753,13 @@ async function bulkReg(type){
   for(const l of lots){
     try{
       const params = new URLSearchParams({
-        action:'write', lot:l.lot, product:l.product, qty:l.qty, type, worker:'', note:'일괄등록', wt
+        action:'write', lot:l.lot, product:l.product, qty:l.qty, type, worker:'', note:'일괄등록', wt, force:'1'
       });
       const r = await fetch(GAS_URL+'?'+params.toString());
       const res = await r.json();
-      if(res.ok) done++; else fail++;
+      if(res.ok) done++;
+      else if(res.duplicate) done++; // 중복은 이미 등록된 것으로 간주 → 스킵
+      else fail++;
     } catch { fail++; }
     const pct = Math.round((done+fail)/lots.length*100);
     progBar.style.width = pct+'%';
