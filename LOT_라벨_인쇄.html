@@ -104,6 +104,12 @@ input:focus,select:focus{border-color:#1565c0;}
 .fl-item:hover{color:#1565c0;}
 .fl-item.active{font-weight:700;color:#e53935;}
 .fl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fl-del{margin-left:auto;background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 2px;line-height:1;}
+.fl-del:hover{color:#e53935;}
+.fl-vis{background:none;border:1px solid #ddd;border-radius:4px;font-size:10px;padding:1px 5px;cursor:pointer;color:#666;}
+.fl-vis.hidden{color:#bbb;border-color:#eee;}
+.fl-add-btn{padding:4px 8px;background:#f0f4ff;border:1.5px solid #1565c0;border-radius:6px;font-size:11px;font-weight:700;color:#1565c0;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.fl-add-btn:hover{background:#1565c0;color:white;}
 .ed-footer{padding:14px 16px;border-top:1px solid #e0e6ed;display:flex;gap:10px;}
 .btn-save-tpl{flex:1;padding:10px;background:#0d1b3e;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
 .btn-reset-tpl{padding:10px 14px;background:#f5f5f5;color:#666;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
@@ -152,6 +158,22 @@ input:focus,select:focus{border-color:#1565c0;}
       <input type="number" id="inp-qty" value="300" min="1"></div>
     <div class="form-group"><label>작업자</label>
       <input type="text" id="inp-worker" value="김태경"></div>
+    <div class="form-group full"><label>작업 형태 <span style="color:#888;font-weight:400;">(복수 선택 가능)</span></label>
+      <div id="inp-worktype" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;">
+          <input type="checkbox" value="RLY" onchange="updatePreview()"> 릴레이(RLY)</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;">
+          <input type="checkbox" value="BOLT" onchange="updatePreview()"> 볼트(BOLT)</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;">
+          <input type="checkbox" value="CBOLT" onchange="updatePreview()"> 커버볼트(CBOLT)</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;">
+          <input type="checkbox" value="BTN" onchange="updatePreview()"> 버튼(BTN)</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;">
+          <input type="checkbox" value="PIN" onchange="updatePreview()"> 핀(PIN)</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;">
+          <input type="checkbox" value="LENS" onchange="updatePreview()"> 렌즈(LENS)</label>
+      </div>
+    </div>
     <div class="form-group"><label>출고일</label>
       <input type="date" id="inp-date"></div>
   </div>
@@ -194,6 +216,17 @@ input:focus,select:focus{border-color:#1565c0;}
         <div class="ed-panel-sec">
           <div class="ep-title">필드 목록</div>
           <div class="field-list" id="field-list"></div>
+          <!-- 필드 추가 -->
+          <div style="padding:10px 0 0;">
+            <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:6px;">필드 추가</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <button class="fl-add-btn" onclick="addField('company')">＋회사명</button>
+              <button class="fl-add-btn" onclick="addField('worktype')">＋작업형태</button>
+              <button class="fl-add-btn" onclick="addField('box')">＋박스번호</button>
+              <button class="fl-add-btn" onclick="addField('total')">＋총박스</button>
+              <button class="fl-add-btn" onclick="addField('custom')">＋텍스트</button>
+            </div>
+          </div>
         </div>
         <div class="ed-panel-sec" id="field-props" style="display:none;">
           <div class="ep-title">선택 필드 속성</div>
@@ -277,6 +310,8 @@ function fmtDate(v){if(!v)return'';const[y,m,d]=v.split('-');return y+'.'+m+'.'+
 // 라벨 생성 (템플릿 기반)
 // ══════════════════════════════════════
 function getFormData(){
+  const wtChecks = document.querySelectorAll('#inp-worktype input[type=checkbox]:checked');
+  const wt = Array.from(wtChecks).map(c=>c.value).join(', ');
   return {
     y:document.getElementById('sel-year').value,
     m:document.getElementById('sel-month').value,
@@ -284,20 +319,26 @@ function getFormData(){
     prd:document.getElementById('inp-product').value||'—',
     qty:document.getElementById('inp-qty').value||'—',
     wrk:document.getElementById('inp-worker').value||'—',
-    dt:fmtDate(document.getElementById('inp-date').value)
+    dt:fmtDate(document.getElementById('inp-date').value),
+    wt:wt||'—',
   };
 }
 
 function fieldValue(f, fd, tot, num){
   const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
   if(f.isQR) return null;
+  if(f.customText !== undefined) return f.customText;
   switch(f.id){
-    case 'product': return fd.prd;
-    case 'lot':     return lotFull;
-    case 'qty':     return fd.qty+' EA';
-    case 'date':    return fd.dt;
-    case 'worker':  return fd.wrk;
-    default: return '';
+    case 'product':  return fd.prd;
+    case 'lot':      return lotFull;
+    case 'qty':      return fd.qty+' EA';
+    case 'date':     return fd.dt;
+    case 'worker':   return fd.wrk;
+    case 'worktype': return fd.wt||'—';
+    case 'company':  return f.customText||'호연테크';
+    case 'box':      return num+'/'+tot;
+    case 'total':    return '총 '+tot+'박스';
+    default:         return f.label||'';
   }
 }
 
@@ -310,6 +351,7 @@ function makeLabelHTML(idx, total){
 
   let fieldsHTML='';
   tpl.fields.forEach(f=>{
+    if(f.hidden) return; // 숨김 필드 건너뜀
     const left=(f.x/tpl.width*100)+'%';
     const top=(f.y/tpl.height*100)+'%';
     const width=(f.w/tpl.width*100)+'%';
@@ -343,8 +385,8 @@ function generateLabels(){
   for(let i=1;i<=total;i++){
     const tot=total; const num=i;
     const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
-    // QR: LOT + 품명(영문) + 수량만 (한글 없음)
-    const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0});
+    // QR: LOT + 품명 + 수량 + 작업형태 (영문 약자라 인코딩 불필요)
+    const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0,wt:fd.wt||''});
     const qrField=tpl.fields.find(f=>f.isQR);
     const qrSize=qrField? Math.round(Math.min(qrField.w,qrField.h)*PX*0.92) : 80;
     if(canvases[i-1]) new QRious({element:canvases[i-1],value:qrData,size:qrSize,foreground:'#000',background:'#fff'});
@@ -381,8 +423,9 @@ function renderEditor(){
     el.style.fontSize=(f.fontSize*1.33)+'px';
     el.style.fontWeight=f.fontWeight;
     el.style.justifyContent=f.align==='left'?'flex-start':f.align==='right'?'flex-end':'center';
-    el.style.borderColor=COLORS[f.id]||'#aaa';
-    el.style.color=COLORS[f.id]||'#333';
+    el.style.borderColor=f.hidden?'#ddd':(COLORS[f.id]||'#aaa');
+    el.style.color=f.hidden?'#ccc':(COLORS[f.id]||'#333');
+    if(f.hidden) el.style.opacity='0.3';
     el.dataset.id=f.id;
     const lbl=document.createElement('div');
     lbl.className='ed-field-label'; lbl.textContent=f.label+(f.isQR?' (QR)':'');
@@ -442,8 +485,52 @@ function renderFieldList(){
   fl.innerHTML=edTpl.fields.map(f=>`
     <div class="fl-item${f.id===selId?' active':''}" onclick="selectField('${f.id}')">
       <div class="fl-dot" style="background:${COLORS[f.id]||'#aaa'}"></div>
-      <span>${f.label}${f.isQR?' (QR)':''}</span>
+      <span style="flex:1;">${f.label}${f.isQR?' (QR)':''}</span>
+      <button class="fl-vis${f.hidden?' hidden':''}" onclick="event.stopPropagation();toggleField('${f.id}')" title="숨기기/보이기">${f.hidden?'숨김':'표시'}</button>
+      <button class="fl-del" onclick="event.stopPropagation();removeField('${f.id}')" title="삭제">✕</button>
     </div>`).join('');
+}
+
+function toggleField(id){
+  const f=edTpl.fields.find(x=>x.id===id); if(!f) return;
+  f.hidden=!f.hidden;
+  renderEditor();
+}
+
+function removeField(id){
+  if(!confirm(`"${id}" 필드를 삭제하시겠습니까?`)) return;
+  edTpl.fields=edTpl.fields.filter(f=>f.id!==id);
+  if(selId===id) selId=null;
+  renderEditor();
+}
+
+// 필드 추가 정의
+const FIELD_PRESETS = {
+  company:  {id:'company',  label:'회사명',   x:2,  y:1,  w:56, h:10, fontSize:8,  fontWeight:'bold',   align:'center', isQR:false, customText:'호연테크'},
+  worktype: {id:'worktype', label:'작업형태', x:2,  y:47, w:56, h:12, fontSize:9,  fontWeight:'bold',   align:'center', isQR:false},
+  box:      {id:'box',      label:'박스번호', x:2,  y:47, w:27, h:12, fontSize:9,  fontWeight:'bold',   align:'center', isQR:false},
+  total:    {id:'total',    label:'총박스수', x:31, y:47, w:27, h:12, fontSize:9,  fontWeight:'bold',   align:'center', isQR:false},
+  custom:   {id:'custom',   label:'텍스트',   x:2,  y:1,  w:40, h:10, fontSize:8,  fontWeight:'normal', align:'center', isQR:false, customText:''},
+};
+
+function addField(type){
+  // 이미 있으면 중복 방지 (custom 제외)
+  if(type !== 'custom' && edTpl.fields.find(f=>f.id===type)){
+    showMiniToast('⚠️ 이미 추가된 필드입니다');
+    return;
+  }
+  let preset = JSON.parse(JSON.stringify(FIELD_PRESETS[type]||FIELD_PRESETS.custom));
+  if(type==='custom'){
+    const txt = prompt('표시할 텍스트를 입력하세요:', '호연테크');
+    if(txt===null) return;
+    preset.customText = txt;
+    preset.label = txt || '텍스트';
+    preset.id = 'custom_'+Date.now();
+  }
+  edTpl.fields.push(preset);
+  selId = preset.id;
+  renderEditor();
+  showMiniToast('✅ 필드 추가됨: '+preset.label);
 }
 
 // 드래그

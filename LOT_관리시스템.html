@@ -126,6 +126,7 @@ tbody tr:hover td{background:#f5f7ff;}
   <div class="tab" id="tab-history"   onclick="switchTab('history')">📋 전체 이력</div>
   <div class="tab" id="tab-bulk"      onclick="switchTab('bulk')">⚡ 일괄 등록</div>
   <div class="tab" id="tab-manual"    onclick="switchTab('manual')">✏️ 수동 등록</div>
+  <div class="tab" id="tab-close"     onclick="switchTab('close')" style="color:#e53935;">📦 월 마감</div>
 </div>
 
 <div class="content">
@@ -179,6 +180,10 @@ tbody tr:hover td{background:#f5f7ff;}
       <table><thead><tr><th>품명</th><th>총 출고</th><th>총 입고</th><th>잔량</th><th>상태</th></tr></thead>
       <tbody id="product-tbody"></tbody></table>
     </div>
+    <div class="section" style="margin-top:16px;">
+      <div class="sec-title">⚙️ 품명별 작업형태 현황</div>
+      <div id="product-wt-wrap"></div>
+    </div>
   </div>
 
   <!-- 전체 이력 -->
@@ -191,8 +196,50 @@ tbody tr:hover td{background:#f5f7ff;}
         <button class="btn-search" onclick="renderHistory()">검색</button>
         <button class="btn-csv" onclick="exportCSV()">📥 CSV</button>
       </div>
-      <table><thead><tr><th>번호</th><th>일시</th><th>LOT</th><th>품명</th><th>수량</th><th>구분</th><th>작업자</th><th>비고</th></tr></thead>
+      <table><thead><tr><th>번호</th><th>일시</th><th>LOT</th><th>품명</th><th>수량</th><th>구분</th><th>작업형태</th><th>작업자</th><th>비고</th></tr></thead>
       <tbody id="history-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- 월 마감 -->
+  <div id="view-close" style="display:none;">
+    <div class="section">
+      <div class="sec-title">📦 월 마감</div>
+      <div style="background:#fff3e0;border:2px solid #f9a825;border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:13px;line-height:2;color:#1a1a2e;">
+        <strong>월 마감을 실행하면:</strong><br>
+        ① 현재 <strong>이력 시트 전체</strong>를 월별 보관 시트로 복사<br>
+        ② <strong>미입고 잔량</strong>(출고 후 입고 안 된 LOT)은 다음 달로 자동 이월<br>
+        ③ 이력 시트 초기화 (이월 데이터만 남김)<br>
+        <span style="color:var(--red)">⚠️ 실행 전 반드시 구글 시트 백업 확인!</span>
+      </div>
+
+      <div class="manual-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="mg full"><label>보관 시트 이름 (월 라벨)</label>
+          <input id="close-label" placeholder="예: 2026년 6월"></div>
+      </div>
+
+      <!-- 현재 잔량 미리보기 -->
+      <div style="margin:14px 0;">
+        <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px;">📋 현재 미입고 잔량 (이월 예정)</div>
+        <div id="close-preview" style="background:#f9f9f9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;max-height:200px;overflow-y:auto;font-size:12px;font-family:monospace;">
+          <span style="color:#aaa">아래 미리보기 버튼을 클릭하세요</span>
+        </div>
+      </div>
+
+      <div class="reg-btns" style="margin-bottom:10px;">
+        <button class="btn-in" onclick="previewClose()">🔍 미리보기</button>
+        <button class="btn-out" onclick="executeClose()" style="background:#e53935;">📦 월 마감 실행</button>
+      </div>
+
+      <!-- 보관된 월 목록 -->
+      <div style="margin-top:24px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:10px;">🗂️ 보관된 월별 데이터</div>
+        <div id="archive-list" style="font-size:13px;color:#aaa;">구글 시트에서 탭으로 확인하세요</div>
+        <a href="https://docs.google.com/spreadsheets/d/11NcgQhEKihhC4R2x_RNNfTihOpmAPC2pDaaWXV6-BX4" target="_blank"
+          style="display:inline-block;margin-top:10px;padding:8px 16px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #2e7d32;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+          📊 구글 시트 열기
+        </a>
+      </div>
     </div>
   </div>
 
@@ -224,6 +271,16 @@ tbody tr:hover td{background:#f5f7ff;}
         <div class="mg"><label>박스당 수량 (EA)</label><input type="number" id="b-qty" value="300" min="1"></div>
         <div class="mg"><label>시작 박스 번호</label><input type="number" id="b-from" value="1" min="1" max="99" oninput="bulkPreview()"></div>
         <div class="mg"><label>끝 박스 번호</label><input type="number" id="b-to" value="5" min="1" max="99" oninput="bulkPreview()"></div>
+        <div class="mg full"><label>작업 형태 <span style="color:#888;font-weight:400;">(복수 선택 가능)</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-RLY" value="RLY"> 릴레이(RLY)</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-BOLT" value="BOLT"> 볼트(BOLT)</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-CBOLT" value="CBOLT"> 커버볼트(CBOLT)</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-BTN" value="BTN"> 버튼(BTN)</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-PIN" value="PIN"> 핀(PIN)</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f0f4ff;border:1.5px solid #c5d8f8;border-radius:7px;padding:5px 10px;cursor:pointer;"><input type="checkbox" id="bwt-LENS" value="LENS"> 렌즈(LENS)</label>
+          </div>
+        </div>
       </div>
 
       <!-- 미리보기 -->
@@ -279,7 +336,7 @@ document.getElementById('mobile-url').textContent = MOBILE_URL;
 let allRecords = [];
 
 // ── 탭 ──
-const TABS = ['dashboard','week','product','history','bulk','manual'];
+const TABS = ['dashboard','week','product','history','bulk','manual','close'];
 function switchTab(t){
   TABS.forEach(id=>{
     document.getElementById('view-'+id).style.display='none';
@@ -404,12 +461,21 @@ function renderWeek(){
 
 // ── 품명별 ──
 function renderProduct(){
-  const map={};
+  const map={}, wtMap={};
   allRecords.forEach(x=>{
+    // 품명별
     if(!map[x.product]) map[x.product]={out:0,in:0};
     if(x.type==='out') map[x.product].out+=Number(x.qty);
     else               map[x.product].in +=Number(x.qty);
+    // 작업형태별
+    const wts = (x.wt||'').split(',').map(w=>w.trim()).filter(w=>w&&w!=='—');
+    wts.forEach(wt=>{
+      if(!wtMap[wt]) wtMap[wt]={out:0,in:0};
+      if(x.type==='out') wtMap[wt].out+=Number(x.qty);
+      else               wtMap[wt].in +=Number(x.qty);
+    });
   });
+
   document.getElementById('product-tbody').innerHTML = Object.entries(map).map(([prd,v])=>{
     const rem=v.out-v.in;
     const status=rem===0?'<span class="badge" style="background:#e8f5e9;color:#2e7d32">완납</span>':
@@ -422,6 +488,57 @@ function renderProduct(){
       <td>${status}</td>
     </tr>`;
   }).join('') || '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">데이터 없음</td></tr>';
+
+  // 품명별 작업형태 맵 생성
+  const prdWtMap = {}; // {품명: {작업형태: {out, in}}}
+  allRecords.forEach(x=>{
+    if(!prdWtMap[x.product]) prdWtMap[x.product]={};
+    const wts=(x.wt||'').split(',').map(w=>w.trim()).filter(w=>w&&w!=='—');
+    wts.forEach(wt=>{
+      if(!prdWtMap[x.product][wt]) prdWtMap[x.product][wt]={out:0,in:0};
+      if(x.type==='out') prdWtMap[x.product][wt].out+=Number(x.qty);
+      else               prdWtMap[x.product][wt].in +=Number(x.qty);
+    });
+  });
+
+  const WT_ORDER=['RLY','BOLT','CBOLT','BTN','PIN','LENS'];
+  const WT_COLOR={RLY:'#e53935',BOLT:'#1565c0',CBOLT:'#2e7d32',BTN:'#f9a825',PIN:'#7b1fa2',LENS:'#00838f'};
+
+  const wrap = document.getElementById('product-wt-wrap');
+  if(!Object.keys(prdWtMap).length){
+    wrap.innerHTML='<div style="text-align:center;color:#aaa;padding:20px;">데이터 없음</div>';
+    return;
+  }
+
+  wrap.innerHTML = Object.entries(prdWtMap).map(([prd, wtData])=>{
+    const wtEntries = Object.entries(wtData).sort((a,b)=>WT_ORDER.indexOf(a[0])-WT_ORDER.indexOf(b[0]));
+    const rows = wtEntries.map(([wt, v])=>{
+      const rem = v.out - v.in;
+      const pct = v.out>0 ? Math.round(v.in/v.out*100) : 0;
+      const color = WT_COLOR[wt]||'#546e7a';
+      const status = rem===0
+        ? `<span style="color:#2e7d32;font-weight:700;">✅ 완납</span>`
+        : `<span style="color:#e65100;font-weight:700;">📦 잔량 ${rem.toLocaleString()}</span>`;
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-weight:700;color:${color};font-size:13px;min-width:60px;">${wt}</span>
+          <span style="font-size:11px;color:#546e7a;">출고 ${v.out.toLocaleString()} / 입고 ${v.in.toLocaleString()}</span>
+          <span style="font-size:12px;">${status}</span>
+        </div>
+        <div style="background:#eee;border-radius:6px;height:10px;overflow:hidden;">
+          <div style="height:100%;background:${color};border-radius:6px;width:${pct}%;transition:width .4s;"></div>
+        </div>
+        <div style="font-size:10px;color:#aaa;text-align:right;margin-top:2px;">${pct}% 입고 완료</div>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="font-size:14px;font-weight:900;color:var(--navy);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #eee;">
+        📦 ${prd}
+      </div>
+      ${rows||'<div style="color:#aaa;font-size:12px;">작업형태 데이터 없음</div>'}
+    </div>`;
+  }).join('');
 }
 
 // ── 전체 이력 ──
@@ -442,9 +559,10 @@ function renderHistory(){
       <td>${x.product}</td>
       <td style="font-weight:700">${Number(x.qty).toLocaleString()} EA</td>
       <td><span class="badge badge-${x.type}">${x.type==='out'?'출고':'입고'}</span></td>
+      <td style="font-weight:700;color:#f9a825;">${x.wt||'—'}</td>
       <td>${x.worker||'—'}</td>
       <td style="font-size:11px;color:var(--gray)">${x.note||''}</td>
-    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px">데이터 없음</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px">데이터 없음</td></tr>';
 }
 
 // ── 수동 등록 ──
@@ -534,7 +652,9 @@ function bulkPreview(){
 async function bulkReg(type){
   const lots = getBulkLots();
   if(!lots.length){ showToast('⚠️ 등록할 항목이 없습니다'); return; }
-  if(!confirm(`${lots.length}건을 ${type==='out'?'출고':'입고'} 등록하시겠습니까?\n\n${lots.map(l=>l.lot).join('\n')}`)) return;
+  const wtChecks = document.querySelectorAll('[id^="bwt-"]:checked');
+  const wt = Array.from(wtChecks).map(c=>c.value).join(', ');
+  if(!confirm(`${lots.length}건을 ${type==='out'?'출고':'입고'} 등록하시겠습니까?\n작업형태: ${wt||'없음'}\n\n${lots.map(l=>l.lot).join('\n')}`)) return;
 
   const prog = document.getElementById('bulk-progress');
   const progText = document.getElementById('bulk-progress-text');
@@ -545,7 +665,7 @@ async function bulkReg(type){
   for(const l of lots){
     try{
       const params = new URLSearchParams({
-        action:'write', lot:l.lot, product:l.product, qty:l.qty, type, worker:'', note:'일괄등록'
+        action:'write', lot:l.lot, product:l.product, qty:l.qty, type, worker:'', note:'일괄등록', wt
       });
       const r = await fetch(GAS_URL+'?'+params.toString());
       const res = await r.json();
@@ -579,9 +699,63 @@ function initBulkTab(){
   if(el) el.addEventListener('change', bulkPreview);
 });
 
+// ══════════════════════════════════════
+// 월 마감
+// ══════════════════════════════════════
+function initCloseTab(){
+  const now = new Date();
+  document.getElementById('close-label').value = now.getFullYear()+'년 '+(now.getMonth()+1)+'월';
+  document.getElementById('close-preview').innerHTML = '<span style="color:#aaa">미리보기 버튼을 클릭하세요</span>';
+}
+
+async function previewClose(){
+  const wrap = document.getElementById('close-preview');
+  wrap.innerHTML = '⏳ 불러오는 중...';
+  try{
+    const r = await fetch(GAS_URL+'?action=get');
+    const records = await r.json();
+    const outLots = {}, inLots = {};
+    records.forEach(rec=>{
+      if(rec.type==='out') outLots[rec.lot]=rec;
+      if(rec.type==='in')  inLots[rec.lot]=rec;
+    });
+    const carried = Object.keys(outLots).filter(l=>!inLots[l]);
+    if(carried.length===0){
+      wrap.innerHTML='<span style="color:#4caf50;font-weight:700;">✅ 미입고 잔량 없음 — 전체 입고 완료</span>';
+    } else {
+      wrap.innerHTML = carried.map(l=>`
+        <div style="padding:3px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">
+          <span style="color:var(--red);font-weight:700;">${l}</span>
+          <span style="color:var(--gray)">${outLots[l].product} / ${outLots[l].qty} EA → 다음달 이월</span>
+        </div>`).join('') +
+        `<div style="margin-top:8px;font-weight:700;color:var(--red);">이월 예정: ${carried.length}건</div>`;
+    }
+  } catch(e){ wrap.innerHTML='❌ 불러오기 실패'; }
+}
+
+async function executeClose(){
+  const label = document.getElementById('close-label').value.trim();
+  if(!label){ showToast('⚠️ 보관 시트 이름을 입력하세요'); return; }
+  if(!confirm(`[${label}] 월 마감을 실행합니다.\n\n• 현재 이력 → "${label}" 시트로 보관\n• 미입고 잔량 → 다음달 이월\n• 이력 시트 초기화\n\n계속하시겠습니까?`)) return;
+
+  showToast('⏳ 월 마감 처리 중...');
+  try{
+    const params = new URLSearchParams({action:'close_month', month_label:label});
+    const r = await fetch(GAS_URL+'?'+params.toString());
+    const result = await r.json();
+    if(result.ok){
+      showToast(`✅ 마감 완료! 보관:${result.archived}건 / 이월:${result.carried}건`);
+      setTimeout(()=>{ loadAll(); previewClose(); }, 1500);
+    } else {
+      showToast('❌ 오류: '+(result.error||''));
+    }
+  } catch(e){ showToast('❌ 네트워크 오류'); }
+}
+
 // ── 초기 로드 ──
 loadAll();
 initBulkTab();
+initCloseTab();
 setInterval(loadAll, 30000); // 30초마다 자동 새로고침
 </script>
 </body>
