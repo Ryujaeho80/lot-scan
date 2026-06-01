@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>LOT 라벨 인쇄 — SL43</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#eef0f4;color:#1a1a2e;padding:20px;}
+.ui-card{background:white;border-radius:14px;padding:22px 26px;max-width:700px;margin:0 auto 18px;box-shadow:0 3px 16px rgba(0,0,0,.09);}
+.ui-title{font-size:17px;font-weight:900;color:#0d1b3e;margin-bottom:3px;}
+.ui-sub{font-size:11px;color:#546e7a;margin-bottom:18px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:3px;}
+.form-group.full{grid-column:1/-1;}
+.form-group.half{grid-column:span 2;}
+label{font-size:10.5px;font-weight:700;color:#546e7a;}
+input,select{border:1.5px solid #e0e6ed;border-radius:7px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#1a1a2e;outline:none;}
+input:focus,select:focus{border-color:#1565c0;}
+.lot-preview{background:#f5f5f5;border:2px dashed #bbb;border-radius:8px;padding:9px;font-size:13px;font-weight:900;color:#0d1b3e;letter-spacing:1.5px;text-align:center;margin:10px 0;}
+.lot-preview span{color:#e53935;}
+.notice{background:#fff8e1;border-left:4px solid #f9a825;border-radius:0 8px 8px 0;padding:9px 13px;font-size:11.5px;color:#5d4037;margin-bottom:12px;line-height:1.7;}
+.btn-row{display:flex;gap:10px;}
+.btn-preview{flex:1;background:#e3f2fd;color:#1565c0;border:2px solid #1565c0;border-radius:9px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.btn-print{flex:1;background:#0d1b3e;color:white;border:none;border-radius:9px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.btn-edit{background:#e8f5e9;color:#2e7d32;border:2px solid #2e7d32;border-radius:9px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.count-badge{display:inline-block;background:#e53935;color:white;border-radius:20px;padding:1px 9px;font-size:10px;font-weight:700;margin-left:5px;}
+
+/* 미리보기 영역 */
+.preview-area{max-width:700px;margin:0 auto;}
+.preview-title{font-size:12px;font-weight:700;color:#546e7a;margin-bottom:8px;}
+.label-wrap{display:flex;flex-wrap:wrap;gap:12px;background:white;border-radius:12px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+
+/* 라벨: 100mm×60mm 가로 — 회전 없음 */
+.label{
+  width:100mm;height:60mm;
+  box-sizing:border-box;background:white;
+  overflow:hidden;position:relative;
+  border:1px solid #ccc;
+  page-break-inside:avoid;break-inside:avoid;
+}
+.label-inner{
+  width:100mm;height:60mm;
+  position:absolute;
+  top:0;left:0;
+  background:white;
+  border:2px solid #000;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.lf{
+  position:absolute;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  border:1px solid #000;
+  padding:0 1mm;
+  word-break:break-all;
+  line-height:1.15;
+}
+.lf-lot{background:#f0f4ff;font-weight:900;}
+.lf-key{
+  position:absolute;
+  font-size:7pt;font-weight:700;
+  color:rgba(0,0,0,.45);
+  top:1px;left:2px;
+  line-height:1;
+  pointer-events:none;
+}
+
+/* ── 라벨 편집기 모달 ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.editor-modal{background:white;border-radius:18px;width:96vw;max-width:860px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+.ed-header{background:#0d1b3e;color:white;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;}
+.ed-title{font-size:15px;font-weight:900;}
+.ed-close{background:none;border:none;color:white;font-size:20px;cursor:pointer;}
+.ed-body{display:flex;flex:1;overflow:hidden;}
+/* 캔버스 영역 */
+.ed-canvas-wrap{flex:1;background:#e8e8e8;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+.ed-canvas{position:relative;background:white;border:2px solid #555;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.ed-field{
+  position:absolute;border:1.5px dashed #aaa;cursor:move;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans KR',sans-serif;color:#000;
+  user-select:none;overflow:hidden;
+  transition:border-color .15s;
+}
+.ed-field:hover,.ed-field.selected{border:2px solid #1565c0;z-index:10;}
+.ed-field.selected{border:2px solid #e53935;}
+.ed-field-label{
+  position:absolute;top:1px;left:2px;font-size:8px;
+  color:rgba(0,0,0,.4);pointer-events:none;line-height:1;
+}
+.ed-resize{position:absolute;width:10px;height:10px;background:#1565c0;border-radius:2px;right:-1px;bottom:-1px;cursor:se-resize;}
+/* 오른쪽 패널 */
+.ed-panel{width:240px;background:#f9f9f9;border-left:1px solid #e0e6ed;display:flex;flex-direction:column;overflow-y:auto;}
+.ed-panel-sec{padding:14px 16px;border-bottom:1px solid #e0e6ed;}
+.ep-title{font-size:11px;font-weight:700;color:#546e7a;letter-spacing:1px;margin-bottom:10px;}
+.ep-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;}
+.ep-label{font-size:11px;color:#333;white-space:nowrap;}
+.ep-input{border:1.5px solid #e0e6ed;border-radius:5px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;width:80px;text-align:right;}
+.ep-select{border:1.5px solid #e0e6ed;border-radius:5px;padding:5px 6px;font-size:11px;font-family:'Noto Sans KR',sans-serif;width:90px;}
+.field-list{padding:10px 16px;}
+.fl-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:12px;}
+.fl-item:hover{color:#1565c0;}
+.fl-item.active{font-weight:700;color:#e53935;}
+.fl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ed-footer{padding:14px 16px;border-top:1px solid #e0e6ed;display:flex;gap:10px;}
+.btn-save-tpl{flex:1;padding:10px;background:#0d1b3e;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.btn-reset-tpl{padding:10px 14px;background:#f5f5f5;color:#666;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+
+@media print{
+  @page{size:100mm 60mm landscape;margin:0;}
+  body{margin:0;padding:0;background:white;}
+  .ui-card,.preview-area>.preview-title,.notice,.modal-overlay{display:none!important;}
+  .preview-area{margin:0;max-width:none;}
+  .label-wrap{display:block!important;padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important;background:transparent!important;}
+  .label{width:100mm!important;height:60mm!important;margin:0!important;border:none!important;page-break-after:always;break-after:page;}
+  .label:last-child{page-break-after:avoid;break-after:avoid;}
+  .label-inner{border:1.5px solid #000!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="ui-card">
+  <div class="ui-title">📦 LOT 라벨 인쇄 (QR 포함)</div>
+  <div class="ui-sub">박스 수량 입력 → LOT + QR 자동 생성 → 인쇄</div>
+  <div class="notice">⚠️ <strong>SL43 설정:</strong> 용지 <strong>100×60mm</strong> / 방향 <strong>가로(Landscape)</strong> / 여백 <strong>없음</strong> / 배율 <strong>100%</strong></div>
+  <div class="form-grid">
+    <div class="form-group"><label>년도</label>
+      <select id="sel-year"><option value="26" selected>2026</option><option value="27">2027</option><option value="28">2028</option></select></div>
+    <div class="form-group"><label>납품 월</label>
+      <select id="sel-month">
+        <option value="1M">1월</option><option value="2M">2월</option><option value="3M">3월</option><option value="4M">4월</option>
+        <option value="5M">5월</option><option value="6M">6월</option><option value="7M">7월</option><option value="8M">8월</option>
+        <option value="9M">9월</option><option value="10M">10월</option><option value="11M">11월</option><option value="12M">12월</option>
+      </select></div>
+    <div class="form-group"><label>납품 주차</label>
+      <select id="sel-week"><option value="1W">1주차</option><option value="2W">2주차</option><option value="3W">3주차</option><option value="4W">4주차</option><option value="5W">5주차</option></select></div>
+    <div class="form-group"><label>총 박스 수</label>
+      <input type="number" id="inp-total" value="5" min="1" max="99"></div>
+    <div class="form-group half">
+      <label>품명 <span style="color:#1565c0;font-size:10px;cursor:pointer;" onclick="saveProduct()">＋ 저장</span></label>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="inp-product" value="R4T-16P-S-ASSY" style="flex:1;" oninput="filterProducts(this.value)">
+        <select id="product-dropdown" style="width:36px;padding:7px 2px;" onchange="selectProduct(this.value)" title="저장된 품명">
+          <option value="">▼</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>박스당 수량 (EA)</label>
+      <input type="number" id="inp-qty" value="300" min="1"></div>
+    <div class="form-group"><label>작업자</label>
+      <input type="text" id="inp-worker" value="김태경"></div>
+    <div class="form-group"><label>출고일</label>
+      <input type="date" id="inp-date"></div>
+  </div>
+
+  <!-- 프리셋 영역 -->
+  <div style="margin-bottom:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:#546e7a;">📋 제품 프리셋</span>
+      <button onclick="savePreset()" style="padding:4px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #2e7d32;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">＋ 현재설정 저장</button>
+    </div>
+    <div id="preset-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  </div>
+
+  <div class="lot-preview" id="lot-preview">26-5M-1W-<span>05</span>-01 ~ 26-5M-1W-<span>05</span>-05</div>
+  <div class="btn-row">
+    <button class="btn-edit" onclick="openEditor()">🎨 라벨 편집</button>
+    <button class="btn-preview" onclick="generateLabels()">🔍 미리보기</button>
+    <button class="btn-print" onclick="printLabels()">🖨️ 인쇄 <span class="count-badge" id="print-count">5장</span></button>
+  </div>
+</div>
+
+<div class="preview-area">
+  <div class="preview-title" id="preview-title" style="display:none;">📋 미리보기</div>
+  <div class="label-wrap" id="label-wrap" style="display:none;"></div>
+</div>
+
+<!-- ── 라벨 편집기 모달 ── -->
+<div class="modal-overlay" id="editor-modal">
+  <div class="editor-modal">
+    <div class="ed-header">
+      <div class="ed-title">🎨 라벨 레이아웃 편집</div>
+      <button class="ed-close" onclick="closeEditor()">✕</button>
+    </div>
+    <div class="ed-body">
+      <div class="ed-canvas-wrap">
+        <!-- 캔버스: 100mm×60mm → 1mm=3.78px → 378×227px -->
+        <div class="ed-canvas" id="ed-canvas" style="width:378px;height:227px;"></div>
+      </div>
+      <div class="ed-panel">
+        <div class="ed-panel-sec">
+          <div class="ep-title">필드 목록</div>
+          <div class="field-list" id="field-list"></div>
+        </div>
+        <div class="ed-panel-sec" id="field-props" style="display:none;">
+          <div class="ep-title">선택 필드 속성</div>
+          <div class="ep-row"><span class="ep-label">X (mm)</span><input class="ep-input" id="ep-x" type="number" oninput="applyProp()"></div>
+          <div class="ep-row"><span class="ep-label">Y (mm)</span><input class="ep-input" id="ep-y" type="number" oninput="applyProp()"></div>
+          <div class="ep-row"><span class="ep-label">폭 (mm)</span><input class="ep-input" id="ep-w" type="number" oninput="applyProp()"></div>
+          <div class="ep-row"><span class="ep-label">높이 (mm)</span><input class="ep-input" id="ep-h" type="number" oninput="applyProp()"></div>
+          <div class="ep-row"><span class="ep-label">글자크기 (pt)</span><input class="ep-input" id="ep-fs" type="number" oninput="applyProp()"></div>
+          <div class="ep-row"><span class="ep-label">정렬</span>
+            <select class="ep-select" id="ep-align" onchange="applyProp()">
+              <option value="left">왼쪽</option><option value="center">가운데</option><option value="right">오른쪽</option>
+            </select></div>
+          <div class="ep-row"><span class="ep-label">굵게</span>
+            <select class="ep-select" id="ep-bold" onchange="applyProp()">
+              <option value="bold">굵게</option><option value="900">매우굵게</option><option value="normal">보통</option>
+            </select></div>
+        </div>
+        <div class="ed-footer">
+          <button class="btn-reset-tpl" onclick="resetTemplate()">↺ 초기화</button>
+          <button class="btn-save-tpl" onclick="saveTemplate()">💾 저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+// ══════════════════════════════════════
+// 템플릿 관리
+// ══════════════════════════════════════
+const PX = 3.7795275591; // 1mm → px
+
+const DEFAULT_TEMPLATE = {
+  width:100, height:60,
+  fields:[
+    {id:'product', label:'품명',   x:2,  y:1,  w:56, h:14, fontSize:10, fontWeight:'bold',   align:'left',   isQR:false},
+    {id:'lot',     label:'LOT',    x:2,  y:16, w:56, h:16, fontSize:11, fontWeight:'900',    align:'center', isQR:false},
+    {id:'qty',     label:'수량',   x:2,  y:33, w:27, h:12, fontSize:9,  fontWeight:'bold',   align:'center', isQR:false},
+    {id:'date',    label:'출고일', x:31, y:33, w:27, h:12, fontSize:9,  fontWeight:'bold',   align:'center', isQR:false},
+    {id:'worker',  label:'작업자', x:2,  y:46, w:56, h:12, fontSize:9,  fontWeight:'bold',   align:'center', isQR:false},
+    {id:'qr',      label:'QR',     x:60, y:1,  w:38, h:58, fontSize:0,  fontWeight:'normal', align:'center', isQR:true}
+  ]
+};
+
+function loadTemplate(){
+  try{ return JSON.parse(localStorage.getItem('lot_label_template')) || JSON.parse(JSON.stringify(DEFAULT_TEMPLATE)); }
+  catch{ return JSON.parse(JSON.stringify(DEFAULT_TEMPLATE)); }
+}
+function saveTemplateLS(t){
+  localStorage.setItem('lot_label_template', JSON.stringify(t));
+}
+let tpl = loadTemplate();
+
+// ══════════════════════════════════════
+// 날짜/초기화
+// ══════════════════════════════════════
+const today=new Date();
+document.getElementById('inp-date').value=
+  today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+document.getElementById('sel-month').value=(today.getMonth()+1)+'M';
+function getWeek(d){const f=new Date(d.getFullYear(),d.getMonth(),1).getDay();return Math.min(Math.ceil((d.getDate()+f)/7),5);}
+document.getElementById('sel-week').value=getWeek(today)+'W';
+
+function updatePreview(){
+  const y=document.getElementById('sel-year').value;
+  const m=document.getElementById('sel-month').value;
+  const w=document.getElementById('sel-week').value;
+  const n=parseInt(document.getElementById('inp-total').value)||1;
+  const t=String(n).padStart(2,'0');
+  document.getElementById('lot-preview').innerHTML=`${y}-${m}-${w}-<span>${t}</span>-01 ~ ${y}-${m}-${w}-<span>${t}</span>-${t}`;
+  document.getElementById('print-count').textContent=n+'장';
+}
+['sel-year','sel-month','sel-week','inp-total'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',updatePreview);
+  document.getElementById(id).addEventListener('input',updatePreview);
+});
+function fmtDate(v){if(!v)return'';const[y,m,d]=v.split('-');return y+'.'+m+'.'+d;}
+
+// ══════════════════════════════════════
+// 라벨 생성 (템플릿 기반)
+// ══════════════════════════════════════
+function getFormData(){
+  return {
+    y:document.getElementById('sel-year').value,
+    m:document.getElementById('sel-month').value,
+    w:document.getElementById('sel-week').value,
+    prd:document.getElementById('inp-product').value||'—',
+    qty:document.getElementById('inp-qty').value||'—',
+    wrk:document.getElementById('inp-worker').value||'—',
+    dt:fmtDate(document.getElementById('inp-date').value)
+  };
+}
+
+function fieldValue(f, fd, tot, num){
+  const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
+  if(f.isQR) return null;
+  switch(f.id){
+    case 'product': return fd.prd;
+    case 'lot':     return lotFull;
+    case 'qty':     return fd.qty+' EA';
+    case 'date':    return fd.dt;
+    case 'worker':  return fd.wrk;
+    default: return '';
+  }
+}
+
+function makeLabelHTML(idx, total){
+  const fd=getFormData();
+  const tot=total; const num=idx;
+  const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
+  const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0,date:fd.dt,worker:fd.wrk,total:tot,box:num});
+  const cid=`qr-${idx}-${Date.now()}`;
+
+  let fieldsHTML='';
+  tpl.fields.forEach(f=>{
+    const left=(f.x/tpl.width*100)+'%';
+    const top=(f.y/tpl.height*100)+'%';
+    const width=(f.w/tpl.width*100)+'%';
+    const height=(f.h/tpl.height*100)+'%';
+    if(f.isQR){
+      fieldsHTML+=`<div class="lf" style="left:${left};top:${top};width:${width};height:${height};border:1px solid #000;">
+        <canvas id="${cid}" style="max-width:100%;max-height:100%;display:block;"></canvas></div>`;
+    } else {
+      const val=fieldValue(f,fd,tot,num);
+      const isLot=f.id==='lot';
+      fieldsHTML+=`<div class="lf${isLot?' lf-lot':''}" style="left:${left};top:${top};width:${width};height:${height};font-size:${f.fontSize}pt;font-weight:${f.fontWeight};justify-content:${f.align==='left'?'flex-start':f.align==='right'?'flex-end':'center'};${isLot?'background:#f0f4ff;':''}">
+        <span class="lf-key">${f.label}</span>
+        <span style="margin-top:${f.fontSize>0?8:0}px;">${val}</span>
+      </div>`;
+    }
+  });
+
+  return `<div class="label"><div class="label-inner">${fieldsHTML}</div></div>`;
+}
+
+function generateLabels(){
+  const total=parseInt(document.getElementById('inp-total').value)||1;
+  const fd=getFormData();
+  let html='';
+  for(let i=1;i<=total;i++) html+=makeLabelHTML(i,total);
+  const wrap=document.getElementById('label-wrap');
+  wrap.innerHTML=html; wrap.style.display='flex';
+  document.getElementById('preview-title').style.display='block';
+  // QR 생성
+  const canvases=wrap.querySelectorAll('canvas');
+  for(let i=1;i<=total;i++){
+    const tot=total; const num=i;
+    const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
+    // QR: LOT + 품명(영문) + 수량만 (한글 없음)
+    const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0});
+    const qrField=tpl.fields.find(f=>f.isQR);
+    const qrSize=qrField? Math.round(Math.min(qrField.w,qrField.h)*PX*0.92) : 80;
+    if(canvases[i-1]) new QRious({element:canvases[i-1],value:qrData,size:qrSize,foreground:'#000',background:'#fff'});
+  }
+  wrap.scrollIntoView({behavior:'smooth'});
+}
+function printLabels(){generateLabels();setTimeout(()=>window.print(),600);}
+
+// ══════════════════════════════════════
+// 라벨 편집기
+// ══════════════════════════════════════
+let edTpl=null, selId=null, dragState=null;
+
+function openEditor(){
+  edTpl=JSON.parse(JSON.stringify(loadTemplate()));
+  renderEditor();
+  document.getElementById('editor-modal').classList.add('show');
+}
+function closeEditor(){
+  document.getElementById('editor-modal').classList.remove('show');
+}
+
+const COLORS={product:'#1565c0',lot:'#e53935',qty:'#2e7d32',date:'#e65100',worker:'#7b1fa2',qr:'#555'};
+
+function renderEditor(){
+  const canvas=document.getElementById('ed-canvas');
+  canvas.innerHTML='';
+  const scaleX=378/edTpl.width, scaleY=227/edTpl.height;
+  edTpl.fields.forEach(f=>{
+    const el=document.createElement('div');
+    el.className='ed-field'+(f.id===selId?' selected':'');
+    el.style.left=(f.x*scaleX)+'px'; el.style.top=(f.y*scaleY)+'px';
+    el.style.width=(f.w*scaleX)+'px'; el.style.height=(f.h*scaleY)+'px';
+    el.style.fontSize=(f.fontSize*1.33)+'px';
+    el.style.fontWeight=f.fontWeight;
+    el.style.justifyContent=f.align==='left'?'flex-start':f.align==='right'?'flex-end':'center';
+    el.style.borderColor=COLORS[f.id]||'#aaa';
+    el.style.color=COLORS[f.id]||'#333';
+    el.dataset.id=f.id;
+    const lbl=document.createElement('div');
+    lbl.className='ed-field-label'; lbl.textContent=f.label+(f.isQR?' (QR)':'');
+    el.appendChild(lbl);
+    if(!f.isQR){
+      const val=document.createElement('div');
+      val.style.cssText='margin-top:10px;font-size:inherit;font-weight:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      val.textContent={product:'R4T-16P-S-ASSY',lot:'26-5M-1W-05-01',qty:'300 EA',date:'2026.05.27',worker:'김태경'}[f.id]||f.label;
+      el.appendChild(val);
+    } else {
+      el.innerHTML+='<div style="font-size:10px;color:#aaa;text-align:center;">▦ QR</div>';
+    }
+    // 리사이즈 핸들
+    const rz=document.createElement('div'); rz.className='ed-resize'; el.appendChild(rz);
+    rz.addEventListener('mousedown',e=>startResize(e,f.id));
+    el.addEventListener('mousedown',e=>{ if(e.target===rz)return; startDrag(e,f.id); });
+    el.addEventListener('click',()=>selectField(f.id));
+    canvas.appendChild(el);
+  });
+  renderFieldList();
+  if(selId) showProps(selId);
+}
+
+function selectField(id){
+  selId=id;
+  renderEditor();
+  showProps(id);
+}
+
+function showProps(id){
+  const f=edTpl.fields.find(x=>x.id===id); if(!f) return;
+  document.getElementById('field-props').style.display='block';
+  document.getElementById('ep-x').value=f.x;
+  document.getElementById('ep-y').value=f.y;
+  document.getElementById('ep-w').value=f.w;
+  document.getElementById('ep-h').value=f.h;
+  document.getElementById('ep-fs').value=f.fontSize;
+  document.getElementById('ep-align').value=f.align;
+  document.getElementById('ep-bold').value=f.fontWeight;
+}
+
+function applyProp(){
+  if(!selId) return;
+  const f=edTpl.fields.find(x=>x.id===selId); if(!f) return;
+  f.x=parseFloat(document.getElementById('ep-x').value)||0;
+  f.y=parseFloat(document.getElementById('ep-y').value)||0;
+  f.w=parseFloat(document.getElementById('ep-w').value)||10;
+  f.h=parseFloat(document.getElementById('ep-h').value)||10;
+  f.fontSize=parseFloat(document.getElementById('ep-fs').value)||9;
+  f.align=document.getElementById('ep-align').value;
+  f.fontWeight=document.getElementById('ep-bold').value;
+  renderEditor();
+}
+
+function renderFieldList(){
+  const fl=document.getElementById('field-list');
+  fl.innerHTML=edTpl.fields.map(f=>`
+    <div class="fl-item${f.id===selId?' active':''}" onclick="selectField('${f.id}')">
+      <div class="fl-dot" style="background:${COLORS[f.id]||'#aaa'}"></div>
+      <span>${f.label}${f.isQR?' (QR)':''}</span>
+    </div>`).join('');
+}
+
+// 드래그
+function startDrag(e,id){
+  e.preventDefault();
+  const scaleX=378/edTpl.width, scaleY=227/edTpl.height;
+  const f=edTpl.fields.find(x=>x.id===id);
+  const startX=e.clientX, startY=e.clientY;
+  const ox=f.x, oy=f.y;
+  function move(ev){
+    f.x=Math.max(0,Math.min(edTpl.width-f.w, ox+(ev.clientX-startX)/scaleX));
+    f.y=Math.max(0,Math.min(edTpl.height-f.h,oy+(ev.clientY-startY)/scaleY));
+    f.x=Math.round(f.x*10)/10; f.y=Math.round(f.y*10)/10;
+    renderEditor();
+  }
+  function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
+  document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);
+  selectField(id);
+}
+
+// 리사이즈
+function startResize(e,id){
+  e.preventDefault(); e.stopPropagation();
+  const scaleX=378/edTpl.width, scaleY=227/edTpl.height;
+  const f=edTpl.fields.find(x=>x.id===id);
+  const startX=e.clientX, startY=e.clientY, ow=f.w, oh=f.h;
+  function move(ev){
+    f.w=Math.max(5, ow+(ev.clientX-startX)/scaleX);
+    f.h=Math.max(5, oh+(ev.clientY-startY)/scaleY);
+    f.w=Math.round(f.w*10)/10; f.h=Math.round(f.h*10)/10;
+    renderEditor();
+  }
+  function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
+  document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);
+  selectField(id);
+}
+
+function saveTemplate(){
+  saveTemplateLS(edTpl);
+  tpl=JSON.parse(JSON.stringify(edTpl));
+  closeEditor();
+  alert('✅ 라벨 템플릿이 저장되었습니다!');
+}
+function resetTemplate(){
+  if(!confirm('기본 레이아웃으로 초기화할까요?')) return;
+  edTpl=JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
+  selId=null;
+  renderEditor();
+}
+
+updatePreview();
+
+// ══════════════════════════════════════
+// 품명 드롭다운
+// ══════════════════════════════════════
+function getProducts(){ try{return JSON.parse(localStorage.getItem('lot_products')||'[]');}catch{return[];} }
+function saveProducts(arr){ localStorage.setItem('lot_products', JSON.stringify(arr)); }
+
+function saveProduct(){
+  const val = document.getElementById('inp-product').value.trim();
+  if(!val) return;
+  const arr = getProducts();
+  if(!arr.includes(val)){ arr.push(val); saveProducts(arr); }
+  renderProductDropdown();
+  showMiniToast('품명 저장됨');
+}
+
+function selectProduct(val){
+  if(!val) return;
+  document.getElementById('inp-product').value = val;
+  document.getElementById('product-dropdown').value = '';
+  updatePreview();
+}
+
+function filterProducts(val){
+  renderProductDropdown(val);
+  updatePreview();
+}
+
+function renderProductDropdown(filter){
+  const dd = document.getElementById('product-dropdown');
+  const arr = getProducts().filter(p => !filter || p.toLowerCase().includes(filter.toLowerCase()));
+  dd.innerHTML = '<option value="">▼</option>' +
+    arr.map(p=>`<option value="${p}">${p}</option>`).join('');
+}
+
+// ══════════════════════════════════════
+// 프리셋 저장/불러오기
+// ══════════════════════════════════════
+function getPresets(){ try{return JSON.parse(localStorage.getItem('lot_presets')||'[]');}catch{return[];} }
+function savePresets(arr){ localStorage.setItem('lot_presets', JSON.stringify(arr)); }
+
+function savePreset(){
+  const name = document.getElementById('inp-product').value.trim();
+  if(!name){ showMiniToast('⚠️ 품명을 입력하세요'); return; }
+  const preset = {
+    name: name,
+    product: document.getElementById('inp-product').value,
+    qty:     document.getElementById('inp-qty').value,
+    worker:  document.getElementById('inp-worker').value,
+    total:   document.getElementById('inp-total').value,
+  };
+  const arr = getPresets();
+  const idx = arr.findIndex(p=>p.name===name);
+  if(idx>=0) arr[idx]=preset; else arr.push(preset);
+  savePresets(arr);
+  // 품명도 자동 저장
+  const prods = getProducts();
+  if(!prods.includes(preset.product)){ prods.push(preset.product); saveProducts(prods); }
+  renderPresets();
+  renderProductDropdown();
+  showMiniToast('✅ 프리셋 저장됨: '+name);
+}
+
+function loadPreset(name){
+  const preset = getPresets().find(p=>p.name===name);
+  if(!preset) return;
+  document.getElementById('inp-product').value = preset.product;
+  document.getElementById('inp-qty').value     = preset.qty;
+  document.getElementById('inp-worker').value  = preset.worker;
+  document.getElementById('inp-total').value   = preset.total;
+  updatePreview();
+  showMiniToast('불러옴: '+name);
+}
+
+function deletePreset(name){
+  const arr = getPresets().filter(p=>p.name!==name);
+  savePresets(arr);
+  renderPresets();
+  showMiniToast('삭제됨');
+}
+
+function renderPresets(){
+  const arr = getPresets();
+  const wrap = document.getElementById('preset-list');
+  if(arr.length===0){
+    wrap.innerHTML='<span style="font-size:11px;color:#aaa;">저장된 프리셋 없음 — 설정 후 ＋ 현재설정 저장 클릭</span>';
+    return;
+  }
+  wrap.innerHTML = arr.map(p=>`
+    <div style="display:flex;align-items:center;gap:0;background:#f0f4ff;border:1.5px solid #1565c0;border-radius:8px;overflow:hidden;">
+      <button onclick="loadPreset('${p.name}')" style="padding:6px 12px;background:none;border:none;font-size:12px;font-weight:700;color:#1565c0;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">
+        📦 ${p.name}<span style="font-size:10px;color:#888;margin-left:4px;">${p.qty}EA</span>
+      </button>
+      <button onclick="deletePreset('${p.name}')" style="padding:6px 8px;background:none;border:none;border-left:1px solid #c5d8f8;color:#aaa;cursor:pointer;font-size:12px;">✕</button>
+    </div>`).join('');
+}
+
+function showMiniToast(msg){
+  let t=document.getElementById('mini-toast');
+  if(!t){ t=document.createElement('div'); t.id='mini-toast';
+    t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;';
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.opacity='0',2000);
+}
+
+// 초기 렌더링
+renderProductDropdown();
+renderPresets();
+</script>
+</body>
+</html>

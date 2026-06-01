@@ -1,0 +1,19 @@
+﻿== LOT 관리시스템 사용 안내 ==
+
+1. LOT_라벨_인쇄.html
+   - 더블클릭으로 열기 (크롬 권장)
+   - 품명/박스수/수량 입력 후 인쇄
+   - 프린터: BIXOLON SL43 / 100x60mm / 가로 / 여백없음
+
+2. LOT_관리시스템.html
+   - 더블클릭으로 열기 (크롬 권장)
+   - 입출고 현황 대시보드
+   - 일괄 등록: ⚡ 일괄 등록 탭 사용
+
+3. 외주 직원 QR 스캔 앱 (핸드폰)
+   - https://ryujaeho80.github.io/lot-scan
+
+4. 구글 시트 (데이터 저장소)
+   - https://docs.google.com/spreadsheets/d/11NcgQhEKihhC4R2x_RNNfTihOpmAPC2pDaaWXV6-BX4
+
+== 호연테크 ==
