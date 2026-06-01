@@ -782,6 +782,49 @@ function showMiniToast(msg){
 // 초기 렌더링
 renderProductDropdown();
 renderPresets();
+
+// ── URL 파라미터 자동 적용 (관리시스템에서 넘어올 때) ──
+(function applyUrlParams(){
+  const p = new URLSearchParams(location.search);
+  if(!p.has('prd')) return; // 파라미터 없으면 스킵
+
+  if(p.get('y'))   document.getElementById('sel-year').value  = p.get('y');
+  if(p.get('m'))   document.getElementById('sel-month').value = p.get('m');
+  if(p.get('w'))   document.getElementById('sel-week').value  = p.get('w');
+  if(p.get('tot')) document.getElementById('inp-total').value = p.get('tot');
+  if(p.get('qty')) document.getElementById('inp-qty').value   = p.get('qty');
+  if(p.get('prd')) document.getElementById('inp-product').value = p.get('prd');
+
+  // 작업형태 체크박스 자동 선택
+  const wt = p.get('wt')||'';
+  if(wt){
+    const wtList = wt.split(',').map(s=>s.trim());
+    // 해당 그룹 펼치기 + 체크
+    document.querySelectorAll('#inp-worktype input[type=checkbox]').forEach(cb=>{
+      if(wtList.includes(cb.value)){
+        cb.checked = true;
+        // 부모 그룹 펼치기
+        const group = cb.closest('[id^="wt-group-"]');
+        if(group && group.style.display==='none'){
+          group.style.display='flex';
+          const title = group.previousElementSibling;
+          if(title) title.textContent = title.textContent.replace('▶','▼');
+        }
+      }
+    });
+    onWtChange();
+  }
+
+  // 범위 적용 후 라벨 바로 생성
+  updatePreview();
+  showMiniToast('✅ 관리시스템에서 불러옴 — 확인 후 인쇄하세요');
+
+  // 인쇄 버튼 강조
+  setTimeout(()=>{
+    const btn = document.querySelector('button[onclick="generateLabels()"]');
+    if(btn){ btn.style.animation='pulse 1s ease 3'; btn.focus(); }
+  }, 500);
+})();
 </script>
 </body>
 </html>

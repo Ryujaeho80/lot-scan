@@ -258,7 +258,16 @@ tbody tr:hover td{background:#f5f7ff;}
       </div>
 
       <div class="manual-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div class="mg full"><label>품명</label><input id="b-product" placeholder="R4T-16P-S-ASSY" value="R4T-16P-S-ASSY"></div>
+        <div class="mg full">
+          <label>품명 <span style="color:#1565c0;font-size:10px;cursor:pointer;" onclick="saveBulkProduct()">＋ 저장</span></label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="b-product" placeholder="R4T-16P-S-ASSY" value="R4T-16P-S-ASSY" style="flex:1;" oninput="bulkPreview()">
+            <select id="b-product-dropdown" style="width:36px;padding:7px 2px;" onchange="selectBulkProduct(this.value)" title="저장된 품명">
+              <option value="">▼</option>
+            </select>
+          </div>
+          <div id="b-product-list" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;"></div>
+        </div>
         <div class="mg"><label>년도</label>
           <select id="b-year"><option value="26" selected>2026</option><option value="27">2027</option></select></div>
         <div class="mg"><label>납품 월</label>
@@ -406,6 +415,8 @@ function switchTab(t){
   });
   document.getElementById('view-'+t).style.display='block';
   document.getElementById('tab-'+t).classList.add('active');
+  if(t==='bulk') initBulkTab();
+  if(t==='close') initCloseTab();
 }
 
 // ── 데이터 로드 ──
@@ -755,10 +766,80 @@ async function bulkReg(type){
   }
 
   prog.style.display='none';
-  showToast(fail===0
-    ? `✅ ${done}건 ${type==='out'?'출고':'입고'} 등록 완료!`
-    : `⚠️ ${done}건 완료, ${fail}건 실패`);
+  if(fail===0){
+    showToast(`✅ ${done}건 ${type==='out'?'출고':'입고'} 등록 완료!`);
+    // 라벨 인쇄 여부 묻기
+    if(type==='out'){
+      setTimeout(()=>{
+        if(confirm(`✅ ${done}건 출고 등록 완료!\n\n🖨️ 라벨을 바로 인쇄하시겠습니까?`)){
+          openBulkPrint(lots, wt);
+        }
+      }, 500);
+    }
+  } else {
+    showToast(`⚠️ ${done}건 완료, ${fail}건 실패`);
+  }
   setTimeout(loadAll, 1000);
+}
+
+// ── 일괄 라벨 인쇄 ──
+function openBulkPrint(lots, wt){
+  const y   = document.getElementById('b-year').value;
+  const m   = document.getElementById('b-month').value;
+  const w   = document.getElementById('b-week').value;
+  const tot = parseInt(document.getElementById('b-total').value)||1;
+  const qty = document.getElementById('b-qty').value;
+  const prd = document.getElementById('b-product').value.trim();
+
+  // 파라미터 URL로 라벨 인쇄 페이지 열기
+  const params = new URLSearchParams({
+    y, m, w, tot, qty, prd,
+    wt: wt||'',
+    from: document.getElementById('b-from').value,
+    to:   document.getElementById('b-to').value
+  });
+  window.open('https://ryujaeho80.github.io/lot-scan/LOT_라벨_인쇄.html?'+params.toString(), '_blank');
+}
+
+// ── 일괄등록 품명 저장/불러오기 ──
+function getBulkProducts(){ try{ return JSON.parse(localStorage.getItem('bulk_products')||'[]'); }catch{ return []; } }
+function saveBulkProducts(arr){ localStorage.setItem('bulk_products', JSON.stringify(arr)); }
+
+function saveBulkProduct(){
+  const val = document.getElementById('b-product').value.trim();
+  if(!val){ showToast('⚠️ 품명을 입력하세요'); return; }
+  const arr = getBulkProducts();
+  if(arr.includes(val)){ showToast('이미 저장된 품명이에요'); return; }
+  arr.push(val);
+  saveBulkProducts(arr);
+  renderBulkProducts();
+  showToast('✅ 품명 저장: '+val);
+}
+
+function selectBulkProduct(val){
+  if(!val) return;
+  document.getElementById('b-product').value = val;
+  document.getElementById('b-product-dropdown').value = '';
+  bulkPreview();
+}
+
+function deleteBulkProduct(name){
+  saveBulkProducts(getBulkProducts().filter(p=>p!==name));
+  renderBulkProducts();
+}
+
+function renderBulkProducts(){
+  const arr = getBulkProducts();
+  // 드롭다운
+  const dd = document.getElementById('b-product-dropdown');
+  dd.innerHTML = '<option value="">▼</option>' + arr.map(p=>`<option value="${p}">${p}</option>`).join('');
+  // 버튼 목록
+  const wrap = document.getElementById('b-product-list');
+  wrap.innerHTML = arr.map(p=>`
+    <div style="display:flex;align-items:center;background:#f0f4ff;border:1.5px solid #1565c0;border-radius:8px;overflow:hidden;">
+      <button onclick="selectBulkProduct('${p}')" style="padding:5px 10px;background:none;border:none;font-size:11px;font-weight:700;color:#1565c0;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">${p}</button>
+      <button onclick="deleteBulkProduct('${p}')" style="padding:5px 7px;background:none;border:none;border-left:1px solid #c5d8f8;color:#aaa;cursor:pointer;font-size:11px;">✕</button>
+    </div>`).join('');
 }
 
 // 일괄 탭 초기화
@@ -767,6 +848,7 @@ function initBulkTab(){
   document.getElementById('b-month').value = (today.getMonth()+1)+'M';
   function getWeek(d){const f=new Date(d.getFullYear(),d.getMonth(),1).getDay();return Math.min(Math.ceil((d.getDate()+f)/7),5);}
   document.getElementById('b-week').value = getWeek(today)+'W';
+  renderBulkProducts();
   bulkPreview();
 }
 
