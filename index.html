@@ -257,6 +257,7 @@ function showResult(data){
     <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'—'}</span></div>
     <div class="rs-row"><span class="rs-key">품명</span><span class="rs-val">${data.product||'—'}</span></div>
     <div class="rs-row"><span class="rs-key">수량</span><span class="rs-val">${data.qty||'—'} EA</span></div>
+    ${data.wt?`<div class="rs-row"><span class="rs-key">작업형태</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
     <div class="rs-row"><span class="rs-key">구분</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'출고':'입고'}</span></div>`;
   const ok=document.getElementById('rs-btn-ok');
   ok.className='rs-btn-ok '+(isOut?'out':'in');
@@ -278,8 +279,9 @@ async function confirmReg(force){
   if(!lot){ showToast('⚠️ LOT 정보 없음'); return; }
   try{
     showToast('⏳ 등록 중...');
+    const wt = pendingData.wt || '';
     const params = new URLSearchParams({
-      action:'write', lot, product, qty, type:scanType, worker:'', note:'',
+      action:'write', lot, product, qty, type:scanType, worker:'', note:'', wt,
       force: force ? '1' : '0'
     });
     const r = await fetch(API + '?' + params.toString());
