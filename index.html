@@ -241,7 +241,13 @@ function onQR(raw){
   scanning=false;
   let data={};
   try{ data=JSON.parse(raw); }
-  catch{ data={lot:raw.trim(),product:'',qty:0}; }
+  catch(e){
+    const lm=raw.match(/"lot"\s*:\s*"([^"]+)"/);
+    const pm=raw.match(/"product"\s*:\s*"([^"]+)"/);
+    const qm=raw.match(/"qty"\s*:\s*(\d+)/);
+    const wm=raw.match(/"wt"\s*:\s*"([^"]+)"/);
+    data={lot:lm?lm[1]:raw.trim(),product:pm?pm[1]:'',qty:qm?parseInt(qm[1]):0,wt:wm?wm[1]:''};
+  }
   pendingData=data;
   showResult(data);
 }
