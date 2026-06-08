@@ -275,24 +275,15 @@ function onScannerKey(e){
 
 async function processScannerInput(raw){
   document.getElementById('scanner-input').value = raw;
-  document.getElementById('scanner-status').textContent = '⏳ \ub4f1\ub85d \uc911...';
+  document.getElementById('scanner-status').textContent = '⏳ 등록 중...';
   let data = {};
   try { data = JSON.parse(raw); }
-  catch(e) {
-    // JSON \ud30c\uc2f1 \uc2e4\ud328 = QR \ub370\uc774\ud130 \uae68\uc9d0 (\ud55c/\uc601 \ubb38\uc81c \ub4f1)
-    document.getElementById('scanner-status').textContent = '❌ \uc785\ub825 \uc624\ub958 — \ud55c/\uc601 \ud0a4 \ud655\uc778 \ud6c4 \ub2e4\uc2dc \ucc0d\uc5b4\uc8fc\uc138\uc694';
-    setTimeout(()=>{
-      document.getElementById('scanner-input').value = '';
-      document.getElementById('scanner-status').textContent = '✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
-      document.getElementById('scanner-input').focus();
-    }, 3000);
-    return;
-  }
+  catch(e) { data = { lot: raw.trim(), product: '', qty: 0 }; }
   if(!data.lot){
-    document.getElementById('scanner-status').textContent = '❌ QR \uc778\uc2dd \uc2e4\ud328 — \ub2e4\uc2dc \ucc0d\uc5b4\uc8fc\uc138\uc694';
+    document.getElementById('scanner-status').textContent = '❌ QR 인식 실패 — 다시 찍어주세요';
     setTimeout(()=>{
       document.getElementById('scanner-input').value = '';
-      document.getElementById('scanner-status').textContent = '✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
+      document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
     }, 2000);
     return;
   }
@@ -310,20 +301,20 @@ async function processScannerInput(raw){
       });
       const r2 = await fetch(API + '?' + p2.toString());
       const res2 = await r2.json();
-      showToast(res2.ok ? '⚠️ \uc911\ubcf5→\uac15\uc81c\ub4f1\ub85d: ' + data.lot : '❌ \ub4f1\ub85d \uc2e4\ud328');
+      showToast(res2.ok ? '⚠️ 중복→강제등록: ' + data.lot : '❌ 등록 실패');
       loadRecent();
     } else if(result.ok){
-      showToast((scanType==='out'?'📤 \ucd9c\uace0':'📥 \uc785\uace0') + ': ' + data.lot + ' ' + (data.qty||'') + 'EA');
+      showToast((scanType==='out'?'📤 출고':'📥 입고') + ': ' + data.lot + ' ' + (data.qty||'') + 'EA');
       loadRecent();
     } else {
-      showToast('❌ \uc624\ub958: ' + (result.error||'\uc11c\ubc84 \uc624\ub958'));
+      showToast('❌ 오류: ' + (result.error||'서버 오류'));
     }
   } catch(e) {
-    showToast('❌ \ub124\ud2b8\uc6cc\ud06c \uc624\ub958');
+    showToast('❌ 네트워크 오류');
   }
   setTimeout(()=>{
     document.getElementById('scanner-input').value = '';
-    document.getElementById('scanner-status').textContent = '✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
+    document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
     document.getElementById('scanner-input').focus();
   }, 1000);
 }
