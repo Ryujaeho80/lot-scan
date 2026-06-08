@@ -126,8 +126,8 @@
 
 <!-- 모드 탭 -->
 <div class="mode-tabs">
-  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">📷 카메라 QR</button>
-  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">🔫 바코드 스캐너</button>
+  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">&#128247; 카메라 QR</button>
+  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">&#128299; 바코드 스캐너</button>
 </div>
 <!-- 카메라 -->
 <div class="cam-area" id="cam-area">
@@ -147,8 +147,8 @@
 <div class="scanner-area" id="scanner-area">
   <div style="font-size:64px;">🔫</div>
   <div class="scanner-hint">스캐너로 QR을 찍으면<br>자동으로 입출고 등록됩니다</div>
-  <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-  <div class="scanner-status" id="scanner-status">스캐너 준비 중...</div>
+  <input class="scanner-input" id="scanner-input" placeholder="Scan QR..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <div class="scanner-status" id="scanner-status">Ready...</div>
 </div>
 <!-- 수동 입력 토글 -->
 <div class="manual-toggle">
@@ -223,7 +223,7 @@ function setMode(mode){
   document.getElementById('scanner-area').classList.toggle('show', mode==='scanner');
   document.querySelector('.manual-toggle').style.display = mode==='scanner' ? 'none' : '';
   if(mode==='scanner'){
-    scanning = false;
+    scanning = false; // camera scan stop
     const inp = document.getElementById('scanner-input');
     inp.value = '';
     document.getElementById('scanner-status').textContent = '✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
