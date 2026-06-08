@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -185,16 +185,16 @@
 <div class="result-modal" id="dup-modal">
   <div class="result-sheet" style="border-top:4px solid #f9a825;">
     <div class="rs-icon">⚠️</div>
-    <div class="rs-title" style="color:#f9a825;">이미 등록된 LOT</div>
+    <div class="rs-title" style="color:#f9a825;" id="dup-title"></div>
     <div class="rs-info" style="font-size:13px;line-height:2;text-align:left;">
       <div><span style="color:rgba(255,255,255,.5)">LOT &nbsp;</span><strong id="dup-lot" style="font-family:monospace;"></strong></div>
-      <div><span style="color:rgba(255,255,255,.5)">등록일 &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
-      <div><span style="color:rgba(255,255,255,.5)">구분 &nbsp;</span><span id="dup-type"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)" id="dup-label-date"></span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)" id="dup-label-type"></span><span id="dup-type"></span></div>
     </div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">그래도 등록하시겠습니까?</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;" id="dup-confirm-text"></div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelDup()">취소</button>
-      <button class="rs-btn-ok" style="background:#f9a825;border-color:#f9a825;color:#000;" onclick="forceReg()">⚠️ 강제 등록</button>
+      <button class="rs-btn-cancel" id="dup-btn-cancel" onclick="cancelDup()"></button>
+      <button class="rs-btn-ok" style="background:#f9a825;border-color:#f9a825;color:#000;" onclick="forceReg()" id="dup-btn-force"></button>
     </div>
   </div>
 </div>
@@ -277,8 +277,18 @@ async function processScannerInput(raw){
   document.getElementById('scanner-input').value = raw;
   document.getElementById('scanner-status').textContent = '⏳ 등록 중...';
   let data = {};
-  try { data = JSON.parse(raw); }
+  let isJson = false;
+  try { data = JSON.parse(raw); isJson = true; }
   catch { data = { lot: raw.trim(), product: '', qty: 0 }; }
+  // JSON 파싱 성공했는데 lot이 없으면 실패 처리
+  if(isJson && !data.lot){
+    document.getElementById('scanner-status').textContent = '\u274c QR \uc778\uc2dd \uc2e4\ud328 \u2014 \ub2e4\uc2dc \ucc0d\uc5b4\uc8fc\uc138\uc694';
+    setTimeout(()=>{
+      document.getElementById('scanner-input').value = '';
+      document.getElementById('scanner-status').textContent = '\u2705 \uc2a4\uce90\ub108 \ub300\uae30 \uc911 \u2014 QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
+    }, 2000);
+    return;
+  }
   if(!data.lot){
     document.getElementById('scanner-status').textContent = '❌ QR 인식 실패 — 다시 찍어주세요';
     setTimeout(()=>{
@@ -446,6 +456,19 @@ async function confirmReg(force){
 }
 
 function showDuplicateWarning(lot, existingDate, type){
+  // 한글 텍스트 동적 삽입 (인코딩 깨짐 방지)
+  var t1 = '\uc774\ub9f0 \ub4f1\ub85d\ub41c LOT';
+  var t2 = '\ub4f1\ub85d\uc77c \u00a0';
+  var t3 = '\uad6c\ubd84 \u00a0';
+  var t4 = '\uadf8\ub798\ub3c4 \ub4f1\ub85d\ud558\uc2dc\uaca0\uc2b5\ub2c8\uae4c?';
+  var t5 = '\ucde8\uc18c';
+  var t6 = '\u26a0\ufe0f \uac15\uc81c \ub4f1\ub85d';
+  if(document.getElementById('dup-title')) document.getElementById('dup-title').textContent = t1;
+  if(document.getElementById('dup-label-date')) document.getElementById('dup-label-date').textContent = t2;
+  if(document.getElementById('dup-label-type')) document.getElementById('dup-label-type').textContent = t3;
+  if(document.getElementById('dup-confirm-text')) document.getElementById('dup-confirm-text').textContent = t4;
+  if(document.getElementById('dup-btn-cancel')) document.getElementById('dup-btn-cancel').textContent = t5;
+  if(document.getElementById('dup-btn-force')) document.getElementById('dup-btn-force').textContent = t6;
   document.getElementById('dup-lot').textContent  = lot;
   document.getElementById('dup-date').textContent = existingDate || '-';
   document.getElementById('dup-type').textContent = type || '-';
