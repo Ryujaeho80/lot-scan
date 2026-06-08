@@ -240,37 +240,25 @@ function setMode(mode){
 }
 
 function initScanner(){
-  document.getElementById('scanner-status').textContent = '✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
-  document.getElementById('scanner-input').value = '';
-  document.removeEventListener('keydown', onScannerKey);
-  document.addEventListener('keydown', onScannerKey);
-  setTimeout(()=> document.getElementById('scanner-input').focus(), 300);
+  document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+  const inp = document.getElementById('scanner-input');
+  inp.value = '';
+  // keydown 이벤트 제거 후 input 이벤트로 교체 (IME 영향 없음)
+  inp.oninput = null;
+  inp.onkeydown = null;
+  inp.addEventListener('input', onScannerInput);
+  setTimeout(()=> inp.focus(), 300);
 }
 
-function onScannerKey(e){
-  if(currentMode !== 'scanner') return;
-  if(e.key === 'Enter'){
-    if(scannerBuffer.length > 3){
-      const raw = scannerBuffer.trim();
-      scannerBuffer = '';
-      clearTimeout(scannerTimer);
-      processScannerInput(raw);
+function onScannerInput(e){
+  clearTimeout(scannerTimer);
+  scannerTimer = setTimeout(()=>{
+    const val = document.getElementById('scanner-input').value.trim();
+    if(val.length > 3){
+      document.getElementById('scanner-input').value = '';
+      processScannerInput(val);
     }
-    scannerBuffer = '';
-    return;
-  }
-  if(e.key.length === 1){
-    scannerBuffer += e.key;
-    clearTimeout(scannerTimer);
-    scannerTimer = setTimeout(()=>{
-      if(scannerBuffer.length > 3){
-        const raw = scannerBuffer.trim();
-        scannerBuffer = '';
-        processScannerInput(raw);
-      }
-      scannerBuffer = '';
-    }, 500);
-  }
+  }, 300);
 }
 
 async function processScannerInput(raw){
