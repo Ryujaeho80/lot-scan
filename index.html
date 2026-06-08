@@ -41,6 +41,24 @@
   @keyframes scanMove{0%{transform:translateY(-100px);}100%{transform:translateY(100px);}}
   .cam-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.6);}
 
+  /* 모드 탭 */
+  .mode-tabs{display:flex;gap:0;padding:0 16px 10px;flex-shrink:0;}
+  .mode-tab{flex:1;padding:10px 4px;border:2px solid rgba(255,255,255,.2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);transition:all .2s;}
+  .mode-tab:first-child{border-radius:10px 0 0 10px;}
+  .mode-tab:last-child{border-radius:0 10px 10px 0;}
+  .mode-tab.active{background:var(--gold);border-color:var(--gold);color:#000;}
+
+  /* 스캐너 모드 */
+  .scanner-area{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;gap:16px;}
+  .scanner-area.show{display:flex;}
+  .scanner-icon{font-size:72px;margin-bottom:4px;}
+  .scanner-hint{font-size:14px;color:rgba(255,255,255,.6);text-align:center;line-height:1.6;}
+  .scanner-input-wrap{width:100%;position:relative;}
+  .scanner-input{width:100%;padding:16px 16px;background:rgba(255,255,255,.07);border:2.5px solid var(--gold);border-radius:14px;color:white;font-size:15px;font-family:'Noto Sans KR',monospace;outline:none;text-align:center;letter-spacing:1px;}
+  .scanner-input:focus{background:rgba(249,168,37,.08);}
+  .scanner-input::placeholder{color:rgba(255,255,255,.25);font-size:13px;letter-spacing:0;}
+  .scanner-status{font-size:12px;color:var(--gold);font-weight:700;text-align:center;min-height:18px;}
+
   /* 수동 입력 토글 */
   .manual-toggle{padding:10px 16px;flex-shrink:0;}
   .btn-manual-toggle{width:100%;padding:11px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.7);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
@@ -110,8 +128,14 @@
   <button class="type-btn in"         id="btn-in"  onclick="setType('in')">🔵 입 고</button>
 </div>
 
+<!-- 모드 탭 -->
+<div class="mode-tabs">
+  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">📷 카메라 QR</button>
+  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">🔫 바코드 스캐너</button>
+</div>
+
 <!-- 카메라 -->
-<div class="cam-area">
+<div class="cam-area" id="cam-area">
   <video id="video" playsinline autoplay muted></video>
   <div class="cam-overlay">
     <div class="scan-frame">
@@ -121,6 +145,16 @@
     </div>
   </div>
   <div class="cam-hint">QR 코드를 사각형 안에 맞춰주세요</div>
+</div>
+
+<!-- 스캐너 모드 -->
+<div class="scanner-area" id="scanner-area">
+  <div class="scanner-icon">🔫</div>
+  <div class="scanner-hint">스캐너로 라벨 QR을 찍으면<br>자동으로 인식됩니다</div>
+  <div class="scanner-input-wrap">
+    <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" style="ime-mode:disabled;" lang="en">
+  </div>
+  <div class="scanner-status" id="scanner-status">스캐너 준비 중...</div>
 </div>
 
 <!-- 수동 입력 토글 -->
@@ -189,6 +223,94 @@ let scanType = 'out';
 let scanning = true;
 let pendingData = null;
 let recentLocal = [];
+let currentMode = 'camera'; // 'camera' | 'scanner'
+
+// ── 모드 전환 ──
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('tab-camera').classList.toggle('active', mode==='camera');
+  document.getElementById('tab-scanner').classList.toggle('active', mode==='scanner');
+  document.getElementById('cam-area').style.display = mode==='camera' ? '' : 'none';
+  document.getElementById('scanner-area').classList.toggle('show', mode==='scanner');
+  document.querySelector('.manual-toggle').style.display = mode==='scanner' ? 'none' : '';
+  if(mode==='scanner'){
+    scanning = false; // 카메라 스캔 중지
+    initScanner();
+  } else {
+    scanning = true;
+    document.getElementById('scanner-status').textContent = '스캐너 준비 중...';
+  }
+}
+
+// ── 스캐너 입력 처리 ──
+let scannerBuffer = '';
+let scannerTimer = null;
+
+function initScanner(){
+  const inp = document.getElementById('scanner-input');
+  document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+  inp.value = '';
+
+  // 키보드 이벤트로 스캐너 입력 감지 (스캐너는 빠르게 연속 입력 후 Enter)
+  document.addEventListener('keydown', onScannerKey);
+  // 입력란 포커스
+  setTimeout(()=> inp.focus(), 300);
+}
+
+function onScannerKey(e){
+  if(currentMode !== 'scanner') return;
+  if(e.key === 'Enter'){
+    if(scannerBuffer.length > 3){
+      const raw = scannerBuffer.trim();
+      scannerBuffer = '';
+      clearTimeout(scannerTimer);
+      processScannerInput(raw);
+    }
+    scannerBuffer = '';
+    return;
+  }
+  if(e.key.length === 1){
+    scannerBuffer += e.key;
+    clearTimeout(scannerTimer);
+    // 500ms 내에 Enter 없으면 자동 처리 (일부 스캐너는 Enter 없이 끝남)
+    scannerTimer = setTimeout(()=>{
+      if(scannerBuffer.length > 3){
+        const raw = scannerBuffer.trim();
+        scannerBuffer = '';
+        processScannerInput(raw);
+      }
+      scannerBuffer = '';
+    }, 500);
+  }
+}
+
+function processScannerInput(raw){
+  document.getElementById('scanner-input').value = raw;
+  document.getElementById('scanner-status').textContent = '⏳ 인식 중...';
+  let data = {};
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    // JSON 아니면 LOT 번호로 처리
+    data = { lot: raw.trim(), product: '', qty: 0 };
+  }
+  if(!data.lot){ 
+    document.getElementById('scanner-status').textContent = '❌ QR 인식 실패 — 다시 찍어주세요';
+    setTimeout(()=>{
+      document.getElementById('scanner-input').value='';
+      document.getElementById('scanner-status').textContent='✅ 스캐너 대기 중 — QR을 찍어주세요';
+    }, 2000);
+    return;
+  }
+  document.getElementById('scanner-status').textContent = `✅ 인식: ${data.lot}`;
+  pendingData = data;
+  showResult(data);
+  // 모달 닫힌 후 입력란 초기화
+  setTimeout(()=>{
+    document.getElementById('scanner-input').value = '';
+    document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+  }, 500);
+}
 
 // ── 서버 연결 확인 ──
 async function checkConn() {
@@ -268,7 +390,13 @@ function showResult(data){
 function cancelScan(){
   document.getElementById('result-modal').classList.remove('show');
   pendingData=null;
-  setTimeout(()=>scanning=true, 1500);
+  if(currentMode==='scanner'){
+    document.getElementById('scanner-input').value='';
+    document.getElementById('scanner-status').textContent='✅ 스캐너 대기 중 — QR을 찍어주세요';
+    setTimeout(()=>document.getElementById('scanner-input').focus(), 300);
+  } else {
+    setTimeout(()=>scanning=true, 1500);
+  }
 }
 
 async function confirmReg(force){
@@ -299,7 +427,13 @@ async function confirmReg(force){
       showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
       loadRecent();
       pendingData=null;
-      setTimeout(()=>scanning=true, 2000);
+      if(currentMode==='scanner'){
+        document.getElementById('scanner-input').value='';
+        document.getElementById('scanner-status').textContent='✅ 스캐너 대기 중 — QR을 찍어주세요';
+        setTimeout(()=>document.getElementById('scanner-input').focus(), 300);
+      } else {
+        setTimeout(()=>scanning=true, 2000);
+      }
     } else {
       showToast('❌ 오류: '+(result.error||''));
       scanning=true;
