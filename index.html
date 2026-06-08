@@ -41,24 +41,6 @@
   @keyframes scanMove{0%{transform:translateY(-100px);}100%{transform:translateY(100px);}}
   .cam-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.6);}
 
-  /* 모드 탭 */
-  .mode-tabs{display:flex;gap:0;padding:0 16px 10px;flex-shrink:0;}
-  .mode-tab{flex:1;padding:10px 4px;border:2px solid rgba(255,255,255,.2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);transition:all .2s;}
-  .mode-tab:first-child{border-radius:10px 0 0 10px;}
-  .mode-tab:last-child{border-radius:0 10px 10px 0;}
-  .mode-tab.active{background:var(--gold);border-color:var(--gold);color:#000;}
-
-  /* 스캐너 모드 */
-  .scanner-area{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;gap:16px;}
-  .scanner-area.show{display:flex;}
-  .scanner-icon{font-size:72px;margin-bottom:4px;}
-  .scanner-hint{font-size:14px;color:rgba(255,255,255,.6);text-align:center;line-height:1.6;}
-  .scanner-input-wrap{width:100%;position:relative;}
-  .scanner-input{width:100%;padding:16px 16px;background:rgba(255,255,255,.07);border:2.5px solid var(--gold);border-radius:14px;color:white;font-size:15px;font-family:'Noto Sans KR',monospace;outline:none;text-align:center;letter-spacing:1px;}
-  .scanner-input:focus{background:rgba(249,168,37,.08);}
-  .scanner-input::placeholder{color:rgba(255,255,255,.25);font-size:13px;letter-spacing:0;}
-  .scanner-status{font-size:12px;color:var(--gold);font-weight:700;text-align:center;min-height:18px;}
-
   /* 수동 입력 토글 */
   .manual-toggle{padding:10px 16px;flex-shrink:0;}
   .btn-manual-toggle{width:100%;padding:11px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.7);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
@@ -109,6 +91,23 @@
   .ri-type-out{color:var(--red);font-weight:700;}
   .ri-type-in{color:#42a5f5;font-weight:700;}
   .ri-time{color:rgba(255,255,255,.35);}
+
+  /* 모드 탭 */
+  .mode-tabs{display:flex;gap:0;padding:0 16px 10px;flex-shrink:0;}
+  .mode-tab{flex:1;padding:10px 4px;border:2px solid rgba(255,255,255,.2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);transition:all .2s;}
+  .mode-tab:first-child{border-radius:10px 0 0 10px;}
+  .mode-tab:last-child{border-radius:0 10px 10px 0;}
+  .mode-tab.active{background:var(--gold);border-color:var(--gold);color:#000;}
+  /* 스캐너 영역 */
+  .scanner-area{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;gap:16px;}
+  .scanner-area.show{display:flex;}
+  .scanner-icon{font-size:64px;margin-bottom:4px;}
+  .scanner-hint{font-size:14px;color:rgba(255,255,255,.6);text-align:center;line-height:1.8;}
+  .scanner-input-wrap{width:100%;}
+  .scanner-input{width:100%;padding:16px;background:rgba(255,255,255,.07);border:2.5px solid var(--gold);border-radius:14px;color:white;font-size:15px;font-family:monospace;outline:none;text-align:center;letter-spacing:1px;}
+  .scanner-input:focus{background:rgba(249,168,37,.08);}
+  .scanner-input::placeholder{color:rgba(255,255,255,.25);font-size:12px;}
+  .scanner-status{font-size:12px;color:var(--gold);font-weight:700;text-align:center;min-height:18px;}
 </style>
 </head>
 <body>
@@ -117,23 +116,23 @@
 <div class="hdr">
   <div>
     <div class="hdr-title">📦 LOT 스캔</div>
-    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">connecting...</span></div>
+    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">서버 연결 중...</span></div>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">&#54638;&#50672;&#53580;&#53356;<br>외주 입&#52636;&#44256;</div>
+  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">호연테크<br>외주 입출고</div>
 </div>
 
 <!-- 타입 선택 -->
 <div class="type-row">
-  <button class="type-btn out active" id="btn-out" onclick="setType('out')">&#128308; &#52636;&#44256;</button>
-  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">&#128309; &#51077;&#44256;</button>
+  <button class="type-btn out active" id="btn-out" onclick="setType('out')">🔴 출 고</button>
+  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">🔵 입 고</button>
 </div>
+
 
 <!-- 모드 탭 -->
 <div class="mode-tabs">
-  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">&#128247; Camera QR</button>
-  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">&#128299; Scanner</button>
+  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">📷 카메라 QR</button>
+  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">🔫 바코드 스캐너</button>
 </div>
-
 <!-- 카메라 -->
 <div class="cam-area" id="cam-area">
   <video id="video" playsinline autoplay muted></video>
@@ -144,40 +143,40 @@
       <div class="scan-line"></div>
     </div>
   </div>
-  <div class="cam-hint">Align QR in frame</div>
+  <div class="cam-hint">QR 코드를 사각형 안에 맞춰주세요</div>
 </div>
+
 
 <!-- 스캐너 모드 -->
 <div class="scanner-area" id="scanner-area">
   <div class="scanner-icon">🔫</div>
-  <div class="scanner-hint">QR &#49828;&#52272; &#51088;&#46041; &#51064;&#49885;</div>
+  <div class="scanner-hint">스캐너로 QR을 찍으면<br>자동으로 입출고 등록됩니다</div>
   <div class="scanner-input-wrap">
-    <input class="scanner-input" id="scanner-input" placeholder="Scan QR..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" style="ime-mode:disabled;" lang="en">
+    <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" style="ime-mode:disabled;">
   </div>
-  <div class="scanner-status" id="scanner-status">Ready...</div>
+  <div class="scanner-status" id="scanner-status">스캐너 준비 중...</div>
 </div>
-
 <!-- 수동 입력 토글 -->
 <div class="manual-toggle">
-  <button class="btn-manual-toggle" onclick="toggleManual()">&#9999; Manual Input</button>
+  <button class="btn-manual-toggle" onclick="toggleManual()">✏️ QR 없이 직접 입력</button>
 </div>
 
 <!-- 수동 입력 패널 -->
 <div class="manual-panel" id="manual-panel">
   <div class="mp-grid">
-    <div class="mp-group full"><div class="mp-label">LOT No.</div>
+    <div class="mp-group full"><div class="mp-label">LOT 번호</div>
       <input class="mp-input" id="m-lot" placeholder="26-5M-1W-05-01" autocomplete="off"></div>
-    <div class="mp-group full"><div class="mp-label">Product</div>
+    <div class="mp-group full"><div class="mp-label">품명</div>
       <input class="mp-input" id="m-product" placeholder="R4T-16P-S-ASSY"></div>
-    <div class="mp-group full"><div class="mp-label">Qty (EA)</div>
+    <div class="mp-group full"><div class="mp-label">수량 (EA)</div>
       <input class="mp-input" type="number" id="m-qty" placeholder="300"></div>
   </div>
-  <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">&#128308; &#52636;&#44256; &#46321;&#47197;</button>
+  <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">🔴 출고 등록</button>
 </div>
 
 <!-- 최근 이력 -->
 <div class="recent-bar">
-  <div class="recent-title">Recent</div>
+  <div class="recent-title">최근 등록</div>
   <div id="recent-list"></div>
 </div>
 
@@ -185,16 +184,16 @@
 <div class="result-modal" id="dup-modal">
   <div class="result-sheet" style="border-top:4px solid #f9a825;">
     <div class="rs-icon">⚠️</div>
-    <div class="rs-title" style="color:#f9a825;">Duplicate LOT</div>
+    <div class="rs-title" style="color:#f9a825;">이미 등록된 LOT</div>
     <div class="rs-info" style="font-size:13px;line-height:2;text-align:left;">
       <div><span style="color:rgba(255,255,255,.5)">LOT &nbsp;</span><strong id="dup-lot" style="font-family:monospace;"></strong></div>
-      <div><span style="color:rgba(255,255,255,.5)">Date &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
-      <div><span style="color:rgba(255,255,255,.5)">Type &nbsp;</span><span id="dup-type"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)">등록일 &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)">구분 &nbsp;</span><span id="dup-type"></span></div>
     </div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">Register anyway?</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">그래도 등록하시겠습니까?</div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelDup()">Cancel</button>
-      <button class="rs-btn-ok" style="background:#f9a825;border-color:#f9a825;color:#000;" onclick="forceReg()">&#9888; Force</button>
+      <button class="rs-btn-cancel" onclick="cancelDup()">취소</button>
+      <button class="rs-btn-ok" style="background:#f9a825;border-color:#f9a825;color:#000;" onclick="forceReg()">⚠️ 강제 등록</button>
     </div>
   </div>
 </div>
@@ -203,11 +202,11 @@
 <div class="result-modal" id="result-modal">
   <div class="result-sheet">
     <div class="rs-icon" id="rs-icon">📤</div>
-    <div class="rs-title out" id="rs-title">&#52636;&#44256; 등록</div>
+    <div class="rs-title out" id="rs-title">출고 등록</div>
     <div class="rs-info" id="rs-info"></div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelScan()">Cancel</button>
-      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">&#9989; Done</button>
+      <button class="rs-btn-cancel" onclick="cancelScan()">취소</button>
+      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">✅ 등록 완료</button>
     </div>
   </div>
 </div>
@@ -218,14 +217,12 @@
 <!-- jsQR -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxPgyY3XlXkorq_Sqj6nsfCT4oZJpBFZ6-hHnYKf_Mv9ptR15vimHwMPw5peCQ0zMNY/exec';
-let scanType = 'out';
-let scanning = true;
-let pendingData = null;
-let recentLocal = [];
-let currentMode = 'camera'; // 'camera' | 'scanner'
 
-// ── 모드 전환 ──
+const API = 'https://script.google.com/macros/s/AKfycbxPgyY3XlXkorq_Sqj6nsfCT4oZJpBFZ6-hHnYKf_Mv9ptR15vimHwMPw5peCQ0zMNY/exec';
+let currentMode = 'camera';
+let scannerBuffer = '';
+let scannerTimer = null;
+
 function setMode(mode){
   currentMode = mode;
   document.getElementById('tab-camera').classList.toggle('active', mode==='camera');
@@ -234,27 +231,19 @@ function setMode(mode){
   document.getElementById('scanner-area').classList.toggle('show', mode==='scanner');
   document.querySelector('.manual-toggle').style.display = mode==='scanner' ? 'none' : '';
   if(mode==='scanner'){
-    scanning = false; // 카메라 스캔 중지
+    scanning = false;
     initScanner();
   } else {
     scanning = true;
-    document.getElementById('scanner-status').textContent = 'Ready...';
   }
 }
 
-// ── 스캐너 입력 처리 ──
-let scannerBuffer = '';
-let scannerTimer = null;
-
 function initScanner(){
-  const inp = document.getElementById('scanner-input');
-  document.getElementById('scanner-status').textContent = '&#9989; Ready — Scan QR';
-  inp.value = '';
-
-  // 키보드 이벤트로 스캐너 입력 감지 (스캐너는 빠르게 연속 입력 후 Enter)
+  document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+  document.getElementById('scanner-input').value = '';
+  document.removeEventListener('keydown', onScannerKey);
   document.addEventListener('keydown', onScannerKey);
-  // 입력란 포커스
-  setTimeout(()=> inp.focus(), 300);
+  setTimeout(()=> document.getElementById('scanner-input').focus(), 300);
 }
 
 function onScannerKey(e){
@@ -272,7 +261,6 @@ function onScannerKey(e){
   if(e.key.length === 1){
     scannerBuffer += e.key;
     clearTimeout(scannerTimer);
-    // 500ms 내에 Enter 없으면 자동 처리 (일부 스캐너는 Enter 없이 끝남)
     scannerTimer = setTimeout(()=>{
       if(scannerBuffer.length > 3){
         const raw = scannerBuffer.trim();
@@ -286,24 +274,18 @@ function onScannerKey(e){
 
 async function processScannerInput(raw){
   document.getElementById('scanner-input').value = raw;
-  document.getElementById('scanner-status').textContent = '&#9203; Reading...';
+  document.getElementById('scanner-status').textContent = '⏳ 등록 중...';
   let data = {};
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    data = { lot: raw.trim(), product: '', qty: 0 };
-  }
+  try { data = JSON.parse(raw); }
+  catch { data = { lot: raw.trim(), product: '', qty: 0 }; }
   if(!data.lot){
-    document.getElementById('scanner-status').textContent = '&#10060; Fail — retry';
+    document.getElementById('scanner-status').textContent = '❌ QR 인식 실패 — 다시 찍어주세요';
     setTimeout(()=>{
-      document.getElementById('scanner-input').value='';
-      document.getElementById('scanner-status').textContent='&#9989; Ready — Scan QR';
+      document.getElementById('scanner-input').value = '';
+      document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
     }, 2000);
     return;
   }
-
-  // ── 확인 없이 바로 등록 ──
-  document.getElementById('scanner-status').textContent = `&#9203; Saving: ${data.lot}`;
   try {
     const params = new URLSearchParams({
       action:'write', lot:data.lot, product:data.product||'', qty:data.qty||0,
@@ -311,36 +293,36 @@ async function processScannerInput(raw){
     });
     const r = await fetch(API + '?' + params.toString());
     const result = await r.json();
-
     if(result.duplicate){
-      // 중복이면 자동 강제등록
       const p2 = new URLSearchParams({
         action:'write', lot:data.lot, product:data.product||'', qty:data.qty||0,
         type:scanType, worker:'', note:'', wt:data.wt||'', force:'1'
       });
       const r2 = await fetch(API + '?' + p2.toString());
       const res2 = await r2.json();
-      if(res2.ok) showToast('&#9888; Dup→Force: ' + data.lot);
-      else showToast('&#10060; Failed');
+      showToast(res2.ok ? '⚠️ 중복→강제등록: ' + data.lot : '❌ 등록 실패');
       loadRecent();
     } else if(result.ok){
-      const label = scanType==='out' ? '📤 &#52636;&#44256;' : '📥 &#51077;&#44256;';
-      showToast(`${label}: ${data.lot} ${data.qty||''}EA`);
+      showToast((scanType==='out'?'📤 출고':'📥 입고') + ': ' + data.lot + ' ' + (data.qty||'') + 'EA');
       loadRecent();
     } else {
-      showToast('&#10060; Error: ' + (result.error||'서버 오류'));
+      showToast('❌ 오류: ' + (result.error||'서버 오류'));
     }
   } catch(e) {
-    showToast('&#10060; Network error');
+    showToast('❌ 네트워크 오류');
   }
-
-  // 1초 후 다음 스캔 대기
   setTimeout(()=>{
     document.getElementById('scanner-input').value = '';
-    document.getElementById('scanner-status').textContent = '&#9989; Ready — Scan QR';
+    document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
     document.getElementById('scanner-input').focus();
   }, 1000);
 }
+// (API는 위에서 선언됨)
+const _API_DUMMY = 'https://script.google.com/macros/s/AKfycbxPgyY3XlXkorq_Sqj6nsfCT4oZJpBFZ6-hHnYKf_Mv9ptR15vimHwMPw5peCQ0zMNY/exec';
+let scanType = 'out';
+let scanning = true;
+let pendingData = null;
+let recentLocal = [];
 
 // ── 서버 연결 확인 ──
 async function checkConn() {
@@ -352,7 +334,7 @@ async function checkConn() {
 }
 function setConn(ok){
   document.getElementById('conn-dot').className='conn-dot '+(ok?'ok':'err');
-  document.getElementById('conn-status').textContent=ok?'connected':'disconnected';
+  document.getElementById('conn-status').textContent=ok?'서버 연결됨':'서버 연결 실패';
 }
 checkConn();
 setInterval(checkConn, 10000);
@@ -364,7 +346,7 @@ function setType(t){
   document.getElementById('btn-in').classList.toggle('active',t==='in');
   const mb=document.getElementById('btn-manual-reg');
   mb.className='btn-manual-reg '+t;
-  mb.textContent=t==='out'?'&#128308; &#52636;&#44256; &#46321;&#47197;':'🔵 &#51077;&#44256; 등록';
+  mb.textContent=t==='out'?'🔴 출고 등록':'🔵 입고 등록';
 }
 
 // ── 카메라 ──
@@ -374,7 +356,7 @@ const ctx = canvas.getContext('2d');
 
 navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
   .then(stream=>{ video.srcObject=stream; video.play(); requestAnimationFrame(tick); })
-  .catch(()=>{ document.querySelector('.cam-hint').textContent='Allow camera'; });
+  .catch(()=>{ document.querySelector('.cam-hint').textContent='카메라 권한을 허용해주세요'; });
 
 function tick(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
@@ -403,30 +385,24 @@ function showResult(data){
   const isOut=scanType==='out';
   document.getElementById('rs-icon').textContent=isOut?'📤':'📥';
   const title=document.getElementById('rs-title');
-  title.textContent=isOut?'&#52636;&#44256; 등록 확인':'&#51077;&#44256; &#54869;&#51064;';
+  title.textContent=isOut?'출고 등록 확인':'입고 등록 확인';
   title.className='rs-title '+(isOut?'out':'in');
   document.getElementById('rs-info').innerHTML=`
     <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'—'}</span></div>
-    <div class="rs-row"><span class="rs-key">Product</span><span class="rs-val">${data.product||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">품명</span><span class="rs-val">${data.product||'—'}</span></div>
     <div class="rs-row"><span class="rs-key">수량</span><span class="rs-val">${data.qty||'—'} EA</span></div>
-    ${data.wt?`<div class="rs-row"><span class="rs-key">Work Type</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
-    <div class="rs-row"><span class="rs-key">Type</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'&#52636;&#44256;':'&#51077;&#44256;'}</span></div>`;
+    ${data.wt?`<div class="rs-row"><span class="rs-key">작업형태</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
+    <div class="rs-row"><span class="rs-key">구분</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'출고':'입고'}</span></div>`;
   const ok=document.getElementById('rs-btn-ok');
   ok.className='rs-btn-ok '+(isOut?'out':'in');
-  ok.textContent='✅ '+( isOut?'&#52636;&#44256;':'&#51077;&#44256;')+' 등록';
+  ok.textContent='✅ '+( isOut?'출고':'입고')+' 등록';
   document.getElementById('result-modal').classList.add('show');
 }
 
 function cancelScan(){
   document.getElementById('result-modal').classList.remove('show');
   pendingData=null;
-  if(currentMode==='scanner'){
-    document.getElementById('scanner-input').value='';
-    document.getElementById('scanner-status').textContent='&#9989; Ready — Scan QR';
-    setTimeout(()=>document.getElementById('scanner-input').focus(), 300);
-  } else {
-    setTimeout(()=>scanning=true, 1500);
-  }
+  setTimeout(()=>scanning=true, 1500);
 }
 
 async function confirmReg(force){
@@ -434,9 +410,9 @@ async function confirmReg(force){
   const lot     = pendingData.lot     || '';
   const product = pendingData.product || '';
   const qty     = pendingData.qty     || 0;
-  if(!lot){ showToast('⚠️ LOT 정보 None'); return; }
+  if(!lot){ showToast('⚠️ LOT 정보 없음'); return; }
   try{
-    showToast('&#9203; Saving...');
+    showToast('⏳ 등록 중...');
     const wt = pendingData.wt || '';
     const params = new URLSearchParams({
       action:'write', lot, product, qty, type:scanType, worker:'', note:'', wt,
@@ -454,22 +430,16 @@ async function confirmReg(force){
 
     if(result.ok){
       document.getElementById('result-modal').classList.remove('show');
-      showToast(scanType==='out'?'✅ &#52636;&#44256; 등록 완료':'✅ &#51077;&#44256; 등록 완료');
+      showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
       loadRecent();
       pendingData=null;
-      if(currentMode==='scanner'){
-        document.getElementById('scanner-input').value='';
-        document.getElementById('scanner-status').textContent='&#9989; Ready — Scan QR';
-        setTimeout(()=>document.getElementById('scanner-input').focus(), 300);
-      } else {
-        setTimeout(()=>scanning=true, 2000);
-      }
+      setTimeout(()=>scanning=true, 2000);
     } else {
-      showToast('&#10060; Error: '+(result.error||''));
+      showToast('❌ 오류: '+(result.error||''));
       scanning=true;
     }
   } catch(e) {
-    showToast('&#10060; Network error');
+    showToast('❌ 네트워크 오류');
     scanning=true;
   }
 }
@@ -503,15 +473,15 @@ async function manualReg(){
   const lot    =document.getElementById('m-lot').value.trim().toUpperCase();
   const product=document.getElementById('m-product').value.trim();
   const qty    =parseInt(document.getElementById('m-qty').value)||0;
-  if(!lot||!product||!qty){ showToast('&#9888; LOT/Product/Qty required'); return; }
+  if(!lot||!product||!qty){ showToast('⚠️ LOT / 품명 / 수량 필수'); return; }
   try{
-    showToast('&#9203; Saving...');
+    showToast('⏳ 등록 중...');
     const params=new URLSearchParams({action:'write',lot,product,qty,type:scanType,worker:'',note:''});
     const r=await fetch(API+'?'+params.toString());
     const result=await r.json();
-    if(result.ok){ showToast(scanType==='out'?'✅ &#52636;&#44256; 등록':'✅ &#51077;&#44256; 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
-    else showToast('&#10060; Server error');
-  } catch { showToast('&#10060; Network error'); }
+    if(result.ok){ showToast(scanType==='out'?'✅ 출고 등록':'✅ 입고 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
+    else showToast('❌ 서버 오류');
+  } catch { showToast('❌ 네트워크 오류'); }
 }
 
 // ── 최근 이력 ──
@@ -523,9 +493,9 @@ async function loadRecent(){
     document.getElementById('recent-list').innerHTML=recent.map(x=>`
       <div class="recent-item">
         <span class="ri-lot">${x.lot}</span>
-        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'&#52636;&#44256;':'&#51077;&#44256;'}</span>
+        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'출고':'입고'}</span>
         <span class="ri-time">${x.date.slice(5,16)}</span>
-      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">None</div>';
+      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">없음</div>';
   } catch {}
 }
 
