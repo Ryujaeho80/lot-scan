@@ -91,6 +91,19 @@
   .ri-type-out{color:var(--red);font-weight:700;}
   .ri-type-in{color:#42a5f5;font-weight:700;}
   .ri-time{color:rgba(255,255,255,.35);}
+
+  .mode-tabs{display:flex;gap:0;padding:0 16px 10px;flex-shrink:0;}
+  .mode-tab{flex:1;padding:10px 4px;border:2px solid rgba(255,255,255,.2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);transition:all .2s;}
+  .mode-tab:first-child{border-radius:10px 0 0 10px;}
+  .mode-tab:last-child{border-radius:0 10px 10px 0;}
+  .mode-tab.active{background:var(--gold);border-color:var(--gold);color:#000;}
+  .scanner-area{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;gap:16px;}
+  .scanner-area.show{display:flex;}
+  .scanner-hint{font-size:14px;color:rgba(255,255,255,.6);text-align:center;line-height:1.8;}
+  .scanner-input{width:100%;padding:16px;background:rgba(255,255,255,.07);border:2.5px solid var(--gold);border-radius:14px;color:white;font-size:15px;font-family:monospace;outline:none;text-align:center;letter-spacing:1px;}
+  .scanner-input:focus{background:rgba(249,168,37,.08);}
+  .scanner-input::placeholder{color:rgba(255,255,255,.25);font-size:12px;}
+  .scanner-status{font-size:13px;color:var(--gold);font-weight:700;text-align:center;min-height:20px;}
 </style>
 </head>
 <body>
@@ -110,8 +123,14 @@
   <button class="type-btn in"         id="btn-in"  onclick="setType('in')">🔵 입 고</button>
 </div>
 
+
+<!-- 모드 탭 -->
+<div class="mode-tabs">
+  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">📷 카메라 QR</button>
+  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">🔫 바코드 스캐너</button>
+</div>
 <!-- 카메라 -->
-<div class="cam-area">
+<div class="cam-area" id="cam-area">
   <video id="video" playsinline autoplay muted></video>
   <div class="cam-overlay">
     <div class="scan-frame">
@@ -123,6 +142,14 @@
   <div class="cam-hint">QR 코드를 사각형 안에 맞춰주세요</div>
 </div>
 
+
+<!-- 스캐너 모드 -->
+<div class="scanner-area" id="scanner-area">
+  <div style="font-size:64px;">🔫</div>
+  <div class="scanner-hint">스캐너로 QR을 찍으면<br>자동으로 입출고 등록됩니다</div>
+  <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <div class="scanner-status" id="scanner-status">스캐너 준비 중...</div>
+</div>
 <!-- 수동 입력 토글 -->
 <div class="manual-toggle">
   <button class="btn-manual-toggle" onclick="toggleManual()">✏️ QR 없이 직접 입력</button>
@@ -184,13 +211,83 @@
 <!-- jsQR -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
+
+let currentMode = 'camera';
+let scannerTimer = null;
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('tab-camera').classList.toggle('active', mode==='camera');
+  document.getElementById('tab-scanner').classList.toggle('active', mode==='scanner');
+  document.getElementById('cam-area').style.display = mode==='camera' ? '' : 'none';
+  document.getElementById('scanner-area').classList.toggle('show', mode==='scanner');
+  document.querySelector('.manual-toggle').style.display = mode==='scanner' ? 'none' : '';
+  if(mode==='scanner'){
+    scanning = false;
+    const inp = document.getElementById('scanner-input');
+    inp.value = '';
+    document.getElementById('scanner-status').textContent = '✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
+    inp.oninput = function(){
+      clearTimeout(scannerTimer);
+      scannerTimer = setTimeout(()=>{
+        const val = inp.value.trim();
+        if(val.length > 3){ inp.value=''; processScan(val); }
+      }, 300);
+    };
+    setTimeout(()=>inp.focus(), 300);
+  } else {
+    scanning = true;
+  }
+}
+
+async function processScan(raw){
+  document.getElementById('scanner-status').textContent = '⏳ \ub4f1\ub85d \uc911...';
+  let data={};
+  try{ data=JSON.parse(raw); }
+  catch(e){
+    const lm=raw.match(/"lot"\s*:\s*"([^"]+)"/);
+    const pm=raw.match(/"product"\s*:\s*"([^"]+)"/);
+    const qm=raw.match(/"qty"\s*:\s*(\d+)/);
+    const wm=raw.match(/"wt"\s*:\s*"([^"]+)"/);
+    data={lot:lm?lm[1]:raw.trim(),product:pm?pm[1]:'',qty:qm?parseInt(qm[1]):0,wt:wm?wm[1]:''};
+  }
+  if(!data.lot){
+    document.getElementById('scanner-status').textContent='❌ QR \uc778\uc2dd \uc2e4\ud328';
+    setTimeout(()=>{
+      document.getElementById('scanner-status').textContent='✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
+      document.getElementById('scanner-input').focus();
+    },2000);
+    return;
+  }
+  try{
+    const p=new URLSearchParams({action:'write',lot:data.lot,product:data.product||'',qty:data.qty||0,type:scanType,worker:'',note:'',wt:data.wt||'',force:'0'});
+    const r=await fetch(API+'?'+p.toString());
+    const res=await r.json();
+    if(res.duplicate){
+      const p2=new URLSearchParams({action:'write',lot:data.lot,product:data.product||'',qty:data.qty||0,type:scanType,worker:'',note:'',wt:data.wt||'',force:'1'});
+      const r2=await fetch(API+'?'+p2.toString());
+      const res2=await r2.json();
+      showToast(res2.ok?'⚠️ \uc911\ubcf5→\uac15\uc81c: '+data.lot:'❌ \uc2e4\ud328');
+    } else if(res.ok){
+      showToast((scanType==='out'?'📤 \ucd9c\uace0':'📥 \uc785\uace0')+': '+data.lot+' '+(data.qty||'')+'EA');
+    } else {
+      showToast('❌ \uc624\ub958: '+(res.error||''));
+    }
+    loadRecent();
+  } catch(e){ showToast('❌ \ub124\ud2b8\uc6cc\ud06c \uc624\ub958'); }
+  setTimeout(()=>{
+    document.getElementById('scanner-status').textContent='✅ \uc2a4\uce90\ub108 \ub300\uae30 \uc911 — QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
+    document.getElementById('scanner-input').focus();
+  },1000);
+}
+
 const API = 'https://script.google.com/macros/s/AKfycbxPgyY3XlXkorq_Sqj6nsfCT4oZJpBFZ6-hHnYKf_Mv9ptR15vimHwMPw5peCQ0zMNY/exec';
 let scanType = 'out';
 let scanning = true;
 let pendingData = null;
 let recentLocal = [];
 
-// ── 서버 연결 확인 ──
+// ── \uc11c\ubc84 \uc5f0\uacb0 \ud655\uc778 ──
 async function checkConn() {
   try {
     const r = await fetch(API+'?action=get');
@@ -200,29 +297,29 @@ async function checkConn() {
 }
 function setConn(ok){
   document.getElementById('conn-dot').className='conn-dot '+(ok?'ok':'err');
-  document.getElementById('conn-status').textContent=ok?'서버 연결됨':'서버 연결 실패';
+  document.getElementById('conn-status').textContent=ok?'\uc11c\ubc84 \uc5f0\uacb0\ub428':'\uc11c\ubc84 \uc5f0\uacb0 \uc2e4\ud328';
 }
 checkConn();
 setInterval(checkConn, 10000);
 
-// ── 타입 선택 ──
+// ── \ud0c0\uc785 \uc120\ud0dd ──
 function setType(t){
   scanType=t;
   document.getElementById('btn-out').classList.toggle('active',t==='out');
   document.getElementById('btn-in').classList.toggle('active',t==='in');
   const mb=document.getElementById('btn-manual-reg');
   mb.className='btn-manual-reg '+t;
-  mb.textContent=t==='out'?'🔴 출고 등록':'🔵 입고 등록';
+  mb.textContent=t==='out'?'🔴 \ucd9c\uace0 \ub4f1\ub85d':'🔵 \uc785\uace0 \ub4f1\ub85d';
 }
 
-// ── 카메라 ──
+// ── \uce74\uba54\ub77c ──
 const video = document.getElementById('video');
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 
 navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
   .then(stream=>{ video.srcObject=stream; video.play(); requestAnimationFrame(tick); })
-  .catch(()=>{ document.querySelector('.cam-hint').textContent='카메라 권한을 허용해주세요'; });
+  .catch(()=>{ document.querySelector('.cam-hint').textContent='\uce74\uba54\ub77c \uad8c\ud55c\uc744 \ud5c8\uc6a9\ud574\uc8fc\uc138\uc694'; });
 
 function tick(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
@@ -252,22 +349,22 @@ function onQR(raw){
   showResult(data);
 }
 
-// ── 결과 모달 ──
+// ── \uacb0\uacfc \ubaa8\ub2ec ──
 function showResult(data){
   const isOut=scanType==='out';
   document.getElementById('rs-icon').textContent=isOut?'📤':'📥';
   const title=document.getElementById('rs-title');
-  title.textContent=isOut?'출고 등록 확인':'입고 등록 확인';
+  title.textContent=isOut?'\ucd9c\uace0 \ub4f1\ub85d \ud655\uc778':'\uc785\uace0 \ub4f1\ub85d \ud655\uc778';
   title.className='rs-title '+(isOut?'out':'in');
   document.getElementById('rs-info').innerHTML=`
     <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'—'}</span></div>
-    <div class="rs-row"><span class="rs-key">품명</span><span class="rs-val">${data.product||'—'}</span></div>
-    <div class="rs-row"><span class="rs-key">수량</span><span class="rs-val">${data.qty||'—'} EA</span></div>
-    ${data.wt?`<div class="rs-row"><span class="rs-key">작업형태</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
-    <div class="rs-row"><span class="rs-key">구분</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'출고':'입고'}</span></div>`;
+    <div class="rs-row"><span class="rs-key">\ud488\uba85</span><span class="rs-val">${data.product||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">\uc218\ub7c9</span><span class="rs-val">${data.qty||'—'} EA</span></div>
+    ${data.wt?`<div class="rs-row"><span class="rs-key">\uc791\uc5c5\ud615\ud0dc</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
+    <div class="rs-row"><span class="rs-key">\uad6c\ubd84</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'\ucd9c\uace0':'\uc785\uace0'}</span></div>`;
   const ok=document.getElementById('rs-btn-ok');
   ok.className='rs-btn-ok '+(isOut?'out':'in');
-  ok.textContent='✅ '+( isOut?'출고':'입고')+' 등록';
+  ok.textContent='✅ '+( isOut?'\ucd9c\uace0':'\uc785\uace0')+' \ub4f1\ub85d';
   document.getElementById('result-modal').classList.add('show');
 }
 
@@ -282,9 +379,9 @@ async function confirmReg(force){
   const lot     = pendingData.lot     || '';
   const product = pendingData.product || '';
   const qty     = pendingData.qty     || 0;
-  if(!lot){ showToast('⚠️ LOT 정보 없음'); return; }
+  if(!lot){ showToast('⚠️ LOT \uc815\ubcf4 \uc5c6\uc74c'); return; }
   try{
-    showToast('⏳ 등록 중...');
+    showToast('⏳ \ub4f1\ub85d \uc911...');
     const wt = pendingData.wt || '';
     const params = new URLSearchParams({
       action:'write', lot, product, qty, type:scanType, worker:'', note:'', wt,
@@ -294,7 +391,7 @@ async function confirmReg(force){
     const result = await r.json();
 
     if(result.duplicate){
-      // 중복 경고 팝업
+      // \uc911\ubcf5 \uacbd\uace0 \ud31d\uc5c5
       document.getElementById('result-modal').classList.remove('show');
       showDuplicateWarning(lot, result.existingDate, result.type);
       return;
@@ -302,16 +399,16 @@ async function confirmReg(force){
 
     if(result.ok){
       document.getElementById('result-modal').classList.remove('show');
-      showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
+      showToast(scanType==='out'?'✅ \ucd9c\uace0 \ub4f1\ub85d \uc644\ub8cc':'✅ \uc785\uace0 \ub4f1\ub85d \uc644\ub8cc');
       loadRecent();
       pendingData=null;
       setTimeout(()=>scanning=true, 2000);
     } else {
-      showToast('❌ 오류: '+(result.error||''));
+      showToast('❌ \uc624\ub958: '+(result.error||''));
       scanning=true;
     }
   } catch(e) {
-    showToast('❌ 네트워크 오류');
+    showToast('❌ \ub124\ud2b8\uc6cc\ud06c \uc624\ub958');
     scanning=true;
   }
 }
@@ -331,12 +428,12 @@ function cancelDup(){
 
 function forceReg(){
   document.getElementById('dup-modal').classList.remove('show');
-  // result-modal 다시 띄워서 confirmReg(force=true)
+  // result-modal \ub2e4\uc2dc \ub744\uc6cc\uc11c confirmReg(force=true)
   document.getElementById('result-modal').classList.add('show');
   confirmReg(true);
 }
 
-// ── 수동 입력 ──
+// ── \uc218\ub3d9 \uc785\ub825 ──
 function toggleManual(){
   const p=document.getElementById('manual-panel');
   p.classList.toggle('show');
@@ -345,18 +442,18 @@ async function manualReg(){
   const lot    =document.getElementById('m-lot').value.trim().toUpperCase();
   const product=document.getElementById('m-product').value.trim();
   const qty    =parseInt(document.getElementById('m-qty').value)||0;
-  if(!lot||!product||!qty){ showToast('⚠️ LOT / 품명 / 수량 필수'); return; }
+  if(!lot||!product||!qty){ showToast('⚠️ LOT / \ud488\uba85 / \uc218\ub7c9 \ud544\uc218'); return; }
   try{
-    showToast('⏳ 등록 중...');
+    showToast('⏳ \ub4f1\ub85d \uc911...');
     const params=new URLSearchParams({action:'write',lot,product,qty,type:scanType,worker:'',note:''});
     const r=await fetch(API+'?'+params.toString());
     const result=await r.json();
-    if(result.ok){ showToast(scanType==='out'?'✅ 출고 등록':'✅ 입고 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
-    else showToast('❌ 서버 오류');
-  } catch { showToast('❌ 네트워크 오류'); }
+    if(result.ok){ showToast(scanType==='out'?'✅ \ucd9c\uace0 \ub4f1\ub85d':'✅ \uc785\uace0 \ub4f1\ub85d'); loadRecent(); document.getElementById('m-lot').value=''; }
+    else showToast('❌ \uc11c\ubc84 \uc624\ub958');
+  } catch { showToast('❌ \ub124\ud2b8\uc6cc\ud06c \uc624\ub958'); }
 }
 
-// ── 최근 이력 ──
+// ── \ucd5c\uadfc \uc774\ub825 ──
 async function loadRecent(){
   try{
     const r=await fetch(API+'?action=get');
@@ -365,13 +462,13 @@ async function loadRecent(){
     document.getElementById('recent-list').innerHTML=recent.map(x=>`
       <div class="recent-item">
         <span class="ri-lot">${x.lot}</span>
-        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'출고':'입고'}</span>
+        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'\ucd9c\uace0':'\uc785\uace0'}</span>
         <span class="ri-time">${x.date.slice(5,16)}</span>
-      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">없음</div>';
+      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">\uc5c6\uc74c</div>';
   } catch {}
 }
 
-// ── 토스트 ──
+// ── \ud1a0\uc2a4\ud2b8 ──
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
