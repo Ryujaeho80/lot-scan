@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -117,21 +117,21 @@
 <div class="hdr">
   <div>
     <div class="hdr-title">📦 LOT 스캔</div>
-    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">서버 연결 중...</span></div>
+    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">connecting...</span></div>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">호연테크<br>외주 입출고</div>
+  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">&#54638;&#50672;&#53580;&#53356;<br>외주 입&#52636;&#44256;</div>
 </div>
 
 <!-- 타입 선택 -->
 <div class="type-row">
-  <button class="type-btn out active" id="btn-out" onclick="setType('out')">🔴 출 고</button>
-  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">🔵 입 고</button>
+  <button class="type-btn out active" id="btn-out" onclick="setType('out')">&#128308; &#52636;&#44256;</button>
+  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">&#128309; &#51077;&#44256;</button>
 </div>
 
 <!-- 모드 탭 -->
 <div class="mode-tabs">
-  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">📷 카메라 QR</button>
-  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">🔫 바코드 스캐너</button>
+  <button class="mode-tab active" id="tab-camera" onclick="setMode('camera')">&#128247; Camera QR</button>
+  <button class="mode-tab" id="tab-scanner" onclick="setMode('scanner')">&#128299; Scanner</button>
 </div>
 
 <!-- 카메라 -->
@@ -144,40 +144,40 @@
       <div class="scan-line"></div>
     </div>
   </div>
-  <div class="cam-hint">QR 코드를 사각형 안에 맞춰주세요</div>
+  <div class="cam-hint">Align QR in frame</div>
 </div>
 
 <!-- 스캐너 모드 -->
 <div class="scanner-area" id="scanner-area">
   <div class="scanner-icon">🔫</div>
-  <div class="scanner-hint">스캐너로 라벨 QR을 찍으면<br>자동으로 인식됩니다</div>
+  <div class="scanner-hint">QR &#49828;&#52272; &#51088;&#46041; &#51064;&#49885;</div>
   <div class="scanner-input-wrap">
-    <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" style="ime-mode:disabled;" lang="en">
+    <input class="scanner-input" id="scanner-input" placeholder="Scan QR..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" style="ime-mode:disabled;" lang="en">
   </div>
-  <div class="scanner-status" id="scanner-status">스캐너 준비 중...</div>
+  <div class="scanner-status" id="scanner-status">Ready...</div>
 </div>
 
 <!-- 수동 입력 토글 -->
 <div class="manual-toggle">
-  <button class="btn-manual-toggle" onclick="toggleManual()">✏️ QR 없이 직접 입력</button>
+  <button class="btn-manual-toggle" onclick="toggleManual()">&#9999; Manual Input</button>
 </div>
 
 <!-- 수동 입력 패널 -->
 <div class="manual-panel" id="manual-panel">
   <div class="mp-grid">
-    <div class="mp-group full"><div class="mp-label">LOT 번호</div>
+    <div class="mp-group full"><div class="mp-label">LOT No.</div>
       <input class="mp-input" id="m-lot" placeholder="26-5M-1W-05-01" autocomplete="off"></div>
-    <div class="mp-group full"><div class="mp-label">품명</div>
+    <div class="mp-group full"><div class="mp-label">Product</div>
       <input class="mp-input" id="m-product" placeholder="R4T-16P-S-ASSY"></div>
-    <div class="mp-group full"><div class="mp-label">수량 (EA)</div>
+    <div class="mp-group full"><div class="mp-label">Qty (EA)</div>
       <input class="mp-input" type="number" id="m-qty" placeholder="300"></div>
   </div>
-  <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">🔴 출고 등록</button>
+  <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">&#128308; &#52636;&#44256; &#46321;&#47197;</button>
 </div>
 
 <!-- 최근 이력 -->
 <div class="recent-bar">
-  <div class="recent-title">최근 등록</div>
+  <div class="recent-title">Recent</div>
   <div id="recent-list"></div>
 </div>
 
@@ -185,16 +185,16 @@
 <div class="result-modal" id="dup-modal">
   <div class="result-sheet" style="border-top:4px solid #f9a825;">
     <div class="rs-icon">⚠️</div>
-    <div class="rs-title" style="color:#f9a825;">이미 등록된 LOT</div>
+    <div class="rs-title" style="color:#f9a825;">Duplicate LOT</div>
     <div class="rs-info" style="font-size:13px;line-height:2;text-align:left;">
       <div><span style="color:rgba(255,255,255,.5)">LOT &nbsp;</span><strong id="dup-lot" style="font-family:monospace;"></strong></div>
-      <div><span style="color:rgba(255,255,255,.5)">등록일 &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
-      <div><span style="color:rgba(255,255,255,.5)">구분 &nbsp;</span><span id="dup-type"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)">Date &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)">Type &nbsp;</span><span id="dup-type"></span></div>
     </div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">그래도 등록하시겠습니까?</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">Register anyway?</div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelDup()">취소</button>
-      <button class="rs-btn-ok" style="background:#f9a825;border-color:#f9a825;color:#000;" onclick="forceReg()">⚠️ 강제 등록</button>
+      <button class="rs-btn-cancel" onclick="cancelDup()">Cancel</button>
+      <button class="rs-btn-ok" style="background:#f9a825;border-color:#f9a825;color:#000;" onclick="forceReg()">&#9888; Force</button>
     </div>
   </div>
 </div>
@@ -203,11 +203,11 @@
 <div class="result-modal" id="result-modal">
   <div class="result-sheet">
     <div class="rs-icon" id="rs-icon">📤</div>
-    <div class="rs-title out" id="rs-title">출고 등록</div>
+    <div class="rs-title out" id="rs-title">&#52636;&#44256; 등록</div>
     <div class="rs-info" id="rs-info"></div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelScan()">취소</button>
-      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">✅ 등록 완료</button>
+      <button class="rs-btn-cancel" onclick="cancelScan()">Cancel</button>
+      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">&#9989; Done</button>
     </div>
   </div>
 </div>
@@ -238,7 +238,7 @@ function setMode(mode){
     initScanner();
   } else {
     scanning = true;
-    document.getElementById('scanner-status').textContent = '스캐너 준비 중...';
+    document.getElementById('scanner-status').textContent = 'Ready...';
   }
 }
 
@@ -248,7 +248,7 @@ let scannerTimer = null;
 
 function initScanner(){
   const inp = document.getElementById('scanner-input');
-  document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+  document.getElementById('scanner-status').textContent = '&#9989; Ready — Scan QR';
   inp.value = '';
 
   // 키보드 이벤트로 스캐너 입력 감지 (스캐너는 빠르게 연속 입력 후 Enter)
@@ -286,7 +286,7 @@ function onScannerKey(e){
 
 async function processScannerInput(raw){
   document.getElementById('scanner-input').value = raw;
-  document.getElementById('scanner-status').textContent = '⏳ 인식 중...';
+  document.getElementById('scanner-status').textContent = '&#9203; Reading...';
   let data = {};
   try {
     data = JSON.parse(raw);
@@ -294,16 +294,16 @@ async function processScannerInput(raw){
     data = { lot: raw.trim(), product: '', qty: 0 };
   }
   if(!data.lot){
-    document.getElementById('scanner-status').textContent = '❌ QR 인식 실패 — 다시 찍어주세요';
+    document.getElementById('scanner-status').textContent = '&#10060; Fail — retry';
     setTimeout(()=>{
       document.getElementById('scanner-input').value='';
-      document.getElementById('scanner-status').textContent='✅ 스캐너 대기 중 — QR을 찍어주세요';
+      document.getElementById('scanner-status').textContent='&#9989; Ready — Scan QR';
     }, 2000);
     return;
   }
 
   // ── 확인 없이 바로 등록 ──
-  document.getElementById('scanner-status').textContent = `⏳ 등록 중: ${data.lot}`;
+  document.getElementById('scanner-status').textContent = `&#9203; Saving: ${data.lot}`;
   try {
     const params = new URLSearchParams({
       action:'write', lot:data.lot, product:data.product||'', qty:data.qty||0,
@@ -320,24 +320,24 @@ async function processScannerInput(raw){
       });
       const r2 = await fetch(API + '?' + p2.toString());
       const res2 = await r2.json();
-      if(res2.ok) showToast('⚠️ 중복→강제: ' + data.lot);
-      else showToast('❌ 등록 실패');
+      if(res2.ok) showToast('&#9888; Dup→Force: ' + data.lot);
+      else showToast('&#10060; Failed');
       loadRecent();
     } else if(result.ok){
-      const label = scanType==='out' ? '📤 출고' : '📥 입고';
+      const label = scanType==='out' ? '📤 &#52636;&#44256;' : '📥 &#51077;&#44256;';
       showToast(`${label}: ${data.lot} ${data.qty||''}EA`);
       loadRecent();
     } else {
-      showToast('❌ 오류: ' + (result.error||'서버 오류'));
+      showToast('&#10060; Error: ' + (result.error||'서버 오류'));
     }
   } catch(e) {
-    showToast('❌ 네트워크 오류');
+    showToast('&#10060; Network error');
   }
 
   // 1초 후 다음 스캔 대기
   setTimeout(()=>{
     document.getElementById('scanner-input').value = '';
-    document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+    document.getElementById('scanner-status').textContent = '&#9989; Ready — Scan QR';
     document.getElementById('scanner-input').focus();
   }, 1000);
 }
@@ -352,7 +352,7 @@ async function checkConn() {
 }
 function setConn(ok){
   document.getElementById('conn-dot').className='conn-dot '+(ok?'ok':'err');
-  document.getElementById('conn-status').textContent=ok?'서버 연결됨':'서버 연결 실패';
+  document.getElementById('conn-status').textContent=ok?'connected':'disconnected';
 }
 checkConn();
 setInterval(checkConn, 10000);
@@ -364,7 +364,7 @@ function setType(t){
   document.getElementById('btn-in').classList.toggle('active',t==='in');
   const mb=document.getElementById('btn-manual-reg');
   mb.className='btn-manual-reg '+t;
-  mb.textContent=t==='out'?'🔴 출고 등록':'🔵 입고 등록';
+  mb.textContent=t==='out'?'&#128308; &#52636;&#44256; &#46321;&#47197;':'🔵 &#51077;&#44256; 등록';
 }
 
 // ── 카메라 ──
@@ -374,7 +374,7 @@ const ctx = canvas.getContext('2d');
 
 navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
   .then(stream=>{ video.srcObject=stream; video.play(); requestAnimationFrame(tick); })
-  .catch(()=>{ document.querySelector('.cam-hint').textContent='카메라 권한을 허용해주세요'; });
+  .catch(()=>{ document.querySelector('.cam-hint').textContent='Allow camera'; });
 
 function tick(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
@@ -403,17 +403,17 @@ function showResult(data){
   const isOut=scanType==='out';
   document.getElementById('rs-icon').textContent=isOut?'📤':'📥';
   const title=document.getElementById('rs-title');
-  title.textContent=isOut?'출고 등록 확인':'입고 등록 확인';
+  title.textContent=isOut?'&#52636;&#44256; 등록 확인':'&#51077;&#44256; &#54869;&#51064;';
   title.className='rs-title '+(isOut?'out':'in');
   document.getElementById('rs-info').innerHTML=`
     <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'—'}</span></div>
-    <div class="rs-row"><span class="rs-key">품명</span><span class="rs-val">${data.product||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">Product</span><span class="rs-val">${data.product||'—'}</span></div>
     <div class="rs-row"><span class="rs-key">수량</span><span class="rs-val">${data.qty||'—'} EA</span></div>
-    ${data.wt?`<div class="rs-row"><span class="rs-key">작업형태</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
-    <div class="rs-row"><span class="rs-key">구분</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'출고':'입고'}</span></div>`;
+    ${data.wt?`<div class="rs-row"><span class="rs-key">Work Type</span><span class="rs-val" style="color:#f9a825;font-weight:700;">${data.wt}</span></div>`:''}
+    <div class="rs-row"><span class="rs-key">Type</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'&#52636;&#44256;':'&#51077;&#44256;'}</span></div>`;
   const ok=document.getElementById('rs-btn-ok');
   ok.className='rs-btn-ok '+(isOut?'out':'in');
-  ok.textContent='✅ '+( isOut?'출고':'입고')+' 등록';
+  ok.textContent='✅ '+( isOut?'&#52636;&#44256;':'&#51077;&#44256;')+' 등록';
   document.getElementById('result-modal').classList.add('show');
 }
 
@@ -422,7 +422,7 @@ function cancelScan(){
   pendingData=null;
   if(currentMode==='scanner'){
     document.getElementById('scanner-input').value='';
-    document.getElementById('scanner-status').textContent='✅ 스캐너 대기 중 — QR을 찍어주세요';
+    document.getElementById('scanner-status').textContent='&#9989; Ready — Scan QR';
     setTimeout(()=>document.getElementById('scanner-input').focus(), 300);
   } else {
     setTimeout(()=>scanning=true, 1500);
@@ -434,9 +434,9 @@ async function confirmReg(force){
   const lot     = pendingData.lot     || '';
   const product = pendingData.product || '';
   const qty     = pendingData.qty     || 0;
-  if(!lot){ showToast('⚠️ LOT 정보 없음'); return; }
+  if(!lot){ showToast('⚠️ LOT 정보 None'); return; }
   try{
-    showToast('⏳ 등록 중...');
+    showToast('&#9203; Saving...');
     const wt = pendingData.wt || '';
     const params = new URLSearchParams({
       action:'write', lot, product, qty, type:scanType, worker:'', note:'', wt,
@@ -454,22 +454,22 @@ async function confirmReg(force){
 
     if(result.ok){
       document.getElementById('result-modal').classList.remove('show');
-      showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
+      showToast(scanType==='out'?'✅ &#52636;&#44256; 등록 완료':'✅ &#51077;&#44256; 등록 완료');
       loadRecent();
       pendingData=null;
       if(currentMode==='scanner'){
         document.getElementById('scanner-input').value='';
-        document.getElementById('scanner-status').textContent='✅ 스캐너 대기 중 — QR을 찍어주세요';
+        document.getElementById('scanner-status').textContent='&#9989; Ready — Scan QR';
         setTimeout(()=>document.getElementById('scanner-input').focus(), 300);
       } else {
         setTimeout(()=>scanning=true, 2000);
       }
     } else {
-      showToast('❌ 오류: '+(result.error||''));
+      showToast('&#10060; Error: '+(result.error||''));
       scanning=true;
     }
   } catch(e) {
-    showToast('❌ 네트워크 오류');
+    showToast('&#10060; Network error');
     scanning=true;
   }
 }
@@ -503,15 +503,15 @@ async function manualReg(){
   const lot    =document.getElementById('m-lot').value.trim().toUpperCase();
   const product=document.getElementById('m-product').value.trim();
   const qty    =parseInt(document.getElementById('m-qty').value)||0;
-  if(!lot||!product||!qty){ showToast('⚠️ LOT / 품명 / 수량 필수'); return; }
+  if(!lot||!product||!qty){ showToast('&#9888; LOT/Product/Qty required'); return; }
   try{
-    showToast('⏳ 등록 중...');
+    showToast('&#9203; Saving...');
     const params=new URLSearchParams({action:'write',lot,product,qty,type:scanType,worker:'',note:''});
     const r=await fetch(API+'?'+params.toString());
     const result=await r.json();
-    if(result.ok){ showToast(scanType==='out'?'✅ 출고 등록':'✅ 입고 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
-    else showToast('❌ 서버 오류');
-  } catch { showToast('❌ 네트워크 오류'); }
+    if(result.ok){ showToast(scanType==='out'?'✅ &#52636;&#44256; 등록':'✅ &#51077;&#44256; 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
+    else showToast('&#10060; Server error');
+  } catch { showToast('&#10060; Network error'); }
 }
 
 // ── 최근 이력 ──
@@ -523,9 +523,9 @@ async function loadRecent(){
     document.getElementById('recent-list').innerHTML=recent.map(x=>`
       <div class="recent-item">
         <span class="ri-lot">${x.lot}</span>
-        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'출고':'입고'}</span>
+        <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'&#52636;&#44256;':'&#51077;&#44256;'}</span>
         <span class="ri-time">${x.date.slice(5,16)}</span>
-      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">없음</div>';
+      </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">None</div>';
   } catch {}
 }
 
