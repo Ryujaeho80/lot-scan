@@ -282,6 +282,15 @@ tbody tr:hover td{background:#f5f7ff;}
         <div class="mg"><label>박스당 수량 (EA)</label><input type="number" id="b-qty" value="300" min="1"></div>
         <div class="mg"><label>시작 박스 번호</label><input type="number" id="b-from" value="1" min="1" max="99" oninput="bulkPreview()"></div>
         <div class="mg"><label>끝 박스 번호</label><input type="number" id="b-to" value="5" min="1" max="99" oninput="bulkPreview()"></div>
+        <div class="mg full" style="background:#fff8e1;border:1.5px solid #f9a825;border-radius:10px;padding:10px 14px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="b-last-diff" onchange="toggleLastDiff()">
+            <span style="font-weight:700;color:#e65100;">🔢 마지막 박스 수량 다름</span>
+          </label>
+          <div id="b-last-diff-wrap" style="display:none;margin-top:8px;display:none;">
+            <input type="number" id="b-last-qty" placeholder="마지막 박스 수량 (EA)" min="1" style="width:100%;padding:8px;border:1.5px solid #f9a825;border-radius:8px;font-size:13px;" oninput="bulkPreview()">
+          </div>
+        </div>
         <div class="mg full"><label>작업 형태 <span style="color:#888;font-weight:400;">(복수 선택 가능)</span> <span id="b-wt-summary" style="color:#1565c0;font-size:10px;"></span></label>
           <div style="margin-top:6px;">
             <div style="margin-bottom:6px;">
@@ -689,6 +698,13 @@ function showToast(msg){
 // ══════════════════════════════════════
 // 일괄 등록
 // ══════════════════════════════════════
+function toggleLastDiff(){
+  const checked = document.getElementById('b-last-diff').checked;
+  const wrap = document.getElementById('b-last-diff-wrap');
+  wrap.style.display = checked ? 'block' : 'none';
+  bulkPreview();
+}
+
 function getBulkLots(){
   const y    = document.getElementById('b-year').value;
   const m    = document.getElementById('b-month').value;
@@ -698,13 +714,17 @@ function getBulkLots(){
   const to   = parseInt(document.getElementById('b-to').value)||tot;
   const prd  = document.getElementById('b-product').value.trim();
   const qty  = parseInt(document.getElementById('b-qty').value)||0;
+  const lastDiff = document.getElementById('b-last-diff').checked;
+  const lastQty  = parseInt(document.getElementById('b-last-qty').value)||qty;
   const totStr = String(tot).padStart(2,'0');
   const lots = [];
-  for(let i=from; i<=Math.min(to,tot); i++){
+  const maxBox = Math.min(to, tot);
+  for(let i=from; i<=maxBox; i++){
+    const isLast = (i === maxBox);
     lots.push({
       lot: `${y}-${m}-${w}-${totStr}-${String(i).padStart(2,'0')}`,
       product: prd,
-      qty: qty
+      qty: (lastDiff && isLast) ? lastQty : qty
     });
   }
   return lots;
@@ -714,12 +734,15 @@ function bulkPreview(){
   const lots = getBulkLots();
   const wrap = document.getElementById('bulk-preview');
   if(!lots.length){ wrap.innerHTML='<span style="color:#aaa">범위를 입력하세요</span>'; return; }
-  wrap.innerHTML = lots.map((l,i)=>
-    `<div style="padding:3px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">
+  const stdQty = parseInt(document.getElementById('b-qty').value)||0;
+  wrap.innerHTML = lots.map((l,i)=>{
+    const isLast = (i===lots.length-1);
+    const isDiff = isLast && l.qty !== stdQty;
+    return `<div style="padding:3px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">
       <span style="color:var(--navy);font-weight:700;">${l.lot}</span>
-      <span style="color:var(--gray)">${l.product} / ${l.qty} EA</span>
-    </div>`
-  ).join('') + `<div style="margin-top:8px;font-weight:700;color:var(--navy);">총 ${lots.length}건</div>`;
+      <span style="color:${isDiff?'#e65100':'var(--gray)'};">${l.product} / <strong>${l.qty} EA</strong>${isDiff?' ⬅️ 별도':''}</span>
+    </div>`;
+  }).join('') + `<div style="margin-top:8px;font-weight:700;color:var(--navy);">총 ${lots.length}건</div>`;
 }
 
 function toggleBWtGroup(id){
@@ -794,11 +817,15 @@ function openBulkPrint(lots, wt){
   const prd = document.getElementById('b-product').value.trim();
 
   // 파라미터 URL로 라벨 인쇄 페이지 열기
+  const lastDiff = document.getElementById('b-last-diff').checked;
+  const lastQty  = document.getElementById('b-last-qty').value;
   const params = new URLSearchParams({
     y, m, w, tot, qty, prd,
     wt: wt||'',
     from: document.getElementById('b-from').value,
-    to:   document.getElementById('b-to').value
+    to:   document.getElementById('b-to').value,
+    lastDiff: lastDiff ? '1' : '0',
+    lastQty:  lastDiff ? lastQty : ''
   });
   window.open('https://ryujaeho80.github.io/lot-scan/LOT_라벨_인쇄.html?'+params.toString(), '_blank');
 }

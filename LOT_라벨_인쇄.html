@@ -257,6 +257,28 @@ input:focus,select:focus{border-color:#1565c0;}
     <div id="preset-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
   </div>
 
+  <!-- 박스 범위 + 마지막 박스 별도 수량 -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+    <div class="form-group" style="flex:1;min-width:100px;">
+      <label>시작 박스</label>
+      <input type="number" id="inp-from" value="1" min="1" max="99" oninput="updatePreview()">
+    </div>
+    <div class="form-group" style="flex:1;min-width:100px;">
+      <label>끝 박스</label>
+      <input type="number" id="inp-to" value="5" min="1" max="99" oninput="updatePreview()">
+    </div>
+  </div>
+  <div style="background:#fff8e1;border:1.5px solid #f9a825;border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+      <input type="checkbox" id="inp-last-diff" onchange="updatePreview()">
+      <span style="font-weight:700;color:#e65100;font-size:13px;">🔢 마지막 박스 수량 다름</span>
+    </label>
+    <div id="inp-last-diff-wrap" style="display:none;margin-top:8px;">
+      <input type="number" id="inp-last-qty" placeholder="마지막 박스 수량 (EA)" min="1"
+        style="width:100%;padding:8px;border:1.5px solid #f9a825;border-radius:8px;font-size:13px;" oninput="updatePreview()">
+    </div>
+  </div>
+
   <div class="lot-preview" id="lot-preview">26-5M-1W-<span>05</span>-01 ~ 26-5M-1W-<span>05</span>-05</div>
   <div class="btn-row">
     <button class="btn-edit" onclick="openEditor()">🎨 라벨 편집</button>
@@ -412,8 +434,9 @@ function fieldValue(f, fd, tot, num){
   }
 }
 
-function makeLabelHTML(idx, total){
+function makeLabelHTML(idx, total, qtyOverride){
   const fd=getFormData();
+  if(qtyOverride!==null && qtyOverride!==undefined) fd.qty=String(qtyOverride);
   const tot=total; const num=idx;
   const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
   const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0,date:fd.dt,worker:fd.wrk,total:tot,box:num});
@@ -448,23 +471,38 @@ function makeLabelHTML(idx, total){
 
 function generateLabels(){
   const total=parseInt(document.getElementById('inp-total').value)||1;
+  const from =parseInt(document.getElementById('inp-from')?.value||'1')||1;
+  const to   =parseInt(document.getElementById('inp-to')?.value||String(total))||total;
   const fd=getFormData();
+  // 마지막 박스 별도 수량 체크
+  const lastDiffEl = document.getElementById('inp-last-diff');
+  const lastDiff = lastDiffEl && lastDiffEl.checked;
+  const lastQty  = lastDiff ? (parseInt(document.getElementById('inp-last-qty')?.value)||parseInt(fd.qty)||0) : null;
+
   let html='';
-  for(let i=1;i<=total;i++) html+=makeLabelHTML(i,total);
+  const maxBox = Math.min(to, total);
+  for(let i=from;i<=maxBox;i++){
+    const isLast = (i===maxBox);
+    const qtyOverride = (lastDiff && isLast) ? lastQty : null;
+    html+=makeLabelHTML(i, total, qtyOverride);
+  }
   const wrap=document.getElementById('label-wrap');
   wrap.innerHTML=html; wrap.style.display='flex';
   document.getElementById('preview-title').style.display='block';
   // QR 생성
   const canvases=wrap.querySelectorAll('canvas');
-  for(let i=1;i<=total;i++){
-    const tot=total; const num=i;
+  const boxList=[];
+  for(let i=from;i<=maxBox;i++) boxList.push(i);
+  boxList.forEach((num,idx)=>{
+    const isLast=(num===maxBox);
+    const qtyForQR=(lastDiff&&isLast)?lastQty:(parseInt(fd.qty)||0);
+    const tot=total;
     const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
-    // QR: LOT + 품명 + 수량 + 작업형태 (영문 약자라 인코딩 불필요)
-    const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0,wt:fd.wt||''});
+    const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:qtyForQR,wt:fd.wt||''});
     const qrField=tpl.fields.find(f=>f.isQR);
     const qrSize=qrField? Math.round(Math.min(qrField.w,qrField.h)*PX*0.92) : 80;
-    if(canvases[i-1]) new QRious({element:canvases[i-1],value:qrData,size:qrSize,foreground:'#000',background:'#fff'});
-  }
+    if(canvases[idx]) new QRious({element:canvases[idx],value:qrData,size:qrSize,foreground:'#000',background:'#fff'});
+  });
   wrap.scrollIntoView({behavior:'smooth'});
 }
 function printLabels(){generateLabels();setTimeout(()=>window.print(),600);}
@@ -657,6 +695,12 @@ function resetTemplate(){
 
 updatePreview();
 
+// 마지막 박스 별도 수량 토글
+document.getElementById('inp-last-diff').addEventListener('change', function(){
+  document.getElementById('inp-last-diff-wrap').style.display = this.checked ? 'block' : 'none';
+  updatePreview();
+});
+
 // ── 작업형태 그룹 펼치기/접기 ──
 function toggleWtGroup(id){
   const el = document.getElementById('wt-group-'+id);
@@ -788,12 +832,19 @@ renderPresets();
   const p = new URLSearchParams(location.search);
   if(!p.has('prd')) return; // 파라미터 없으면 스킵
 
-  if(p.get('y'))   document.getElementById('sel-year').value  = p.get('y');
-  if(p.get('m'))   document.getElementById('sel-month').value = p.get('m');
-  if(p.get('w'))   document.getElementById('sel-week').value  = p.get('w');
-  if(p.get('tot')) document.getElementById('inp-total').value = p.get('tot');
-  if(p.get('qty')) document.getElementById('inp-qty').value   = p.get('qty');
-  if(p.get('prd')) document.getElementById('inp-product').value = p.get('prd');
+  if(p.get('y'))    document.getElementById('sel-year').value    = p.get('y');
+  if(p.get('m'))    document.getElementById('sel-month').value   = p.get('m');
+  if(p.get('w'))    document.getElementById('sel-week').value    = p.get('w');
+  if(p.get('tot'))  document.getElementById('inp-total').value   = p.get('tot');
+  if(p.get('qty'))  document.getElementById('inp-qty').value     = p.get('qty');
+  if(p.get('prd'))  document.getElementById('inp-product').value = p.get('prd');
+  if(p.get('from')) document.getElementById('inp-from').value    = p.get('from');
+  if(p.get('to'))   document.getElementById('inp-to').value      = p.get('to');
+  if(p.get('lastDiff')==='1'){
+    document.getElementById('inp-last-diff').checked = true;
+    document.getElementById('inp-last-diff-wrap').style.display = 'block';
+    if(p.get('lastQty')) document.getElementById('inp-last-qty').value = p.get('lastQty');
+  }
 
   // 작업형태 체크박스 자동 선택
   const wt = p.get('wt')||'';
