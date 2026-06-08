@@ -337,14 +337,10 @@ function tick(){
 function onQR(raw){
   scanning=false;
   let data={};
+  // QR에는 LOT 번호만 들어있음 (예: 26-6M-2W-05-01)
+  // JSON 형식이면 파싱, 아니면 LOT 번호로 처리
   try{ data=JSON.parse(raw); }
-  catch(e){
-    const lm=raw.match(/"lot"\s*:\s*"([^"]+)"/);
-    const pm=raw.match(/"product"\s*:\s*"([^"]+)"/);
-    const qm=raw.match(/"qty"\s*:\s*(\d+)/);
-    const wm=raw.match(/"wt"\s*:\s*"([^"]+)"/);
-    data={lot:lm?lm[1]:raw.trim(),product:pm?pm[1]:'',qty:qm?parseInt(qm[1]):0,wt:wm?wm[1]:''};
-  }
+  catch(e){ data={lot:raw.trim(),product:'',qty:0}; }
   pendingData=data;
   showResult(data);
 }

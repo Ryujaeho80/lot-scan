@@ -439,7 +439,7 @@ function makeLabelHTML(idx, total, qtyOverride){
   if(qtyOverride!==null && qtyOverride!==undefined) fd.qty=String(qtyOverride);
   const tot=total; const num=idx;
   const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
-  const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:parseInt(fd.qty)||0,date:fd.dt,worker:fd.wrk,total:tot,box:num});
+  const qrData=lotFull;
   const cid=`qr-${idx}-${Date.now()}`;
 
   let fieldsHTML='';
@@ -498,7 +498,7 @@ function generateLabels(){
     const qtyForQR=(lastDiff&&isLast)?lastQty:(parseInt(fd.qty)||0);
     const tot=total;
     const lotFull=`${fd.y}-${fd.m}-${fd.w}-${String(tot).padStart(2,'0')}-${String(num).padStart(2,'0')}`;
-    const qrData=JSON.stringify({lot:lotFull,product:fd.prd,qty:qtyForQR,wt:fd.wt||''});
+    const qrData=lotFull;
     const qrField=tpl.fields.find(f=>f.isQR);
     const qrSize=qrField? Math.round(Math.min(qrField.w,qrField.h)*PX*0.92) : 80;
     if(canvases[idx]) new QRious({element:canvases[idx],value:qrData,size:qrSize,foreground:'#000',background:'#fff'});
