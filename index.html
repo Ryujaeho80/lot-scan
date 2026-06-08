@@ -153,7 +153,7 @@
   <div class="scanner-icon">🔫</div>
   <div class="scanner-hint">스캐너로 QR을 찍으면<br>자동으로 입출고 등록됩니다</div>
   <div class="scanner-input-wrap">
-    <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" style="ime-mode:disabled;">
+    <input class="scanner-input" id="scanner-input" placeholder="스캐너로 QR 찍기..." readonly style="cursor:default;">
   </div>
   <div class="scanner-status" id="scanner-status">스캐너 준비 중...</div>
 </div>
@@ -277,16 +277,15 @@ async function processScannerInput(raw){
   document.getElementById('scanner-input').value = raw;
   document.getElementById('scanner-status').textContent = '⏳ 등록 중...';
   let data = {};
-  let isJson = false;
-  try { data = JSON.parse(raw); isJson = true; }
-  catch { data = { lot: raw.trim(), product: '', qty: 0 }; }
-  // JSON 파싱 성공했는데 lot이 없으면 실패 처리
-  if(isJson && !data.lot){
-    document.getElementById('scanner-status').textContent = '\u274c QR \uc778\uc2dd \uc2e4\ud328 \u2014 \ub2e4\uc2dc \ucc0d\uc5b4\uc8fc\uc138\uc694';
+  try { data = JSON.parse(raw); }
+  catch(e) {
+    // JSON 파싱 실패 = QR 데이터 깨짐 (한/영 문제 등)
+    document.getElementById('scanner-status').textContent = '❌ 입력 오류 — 한/영 키 확인 후 다시 찍어주세요';
     setTimeout(()=>{
       document.getElementById('scanner-input').value = '';
-      document.getElementById('scanner-status').textContent = '\u2705 \uc2a4\uce90\ub108 \ub300\uae30 \uc911 \u2014 QR\uc744 \ucc0d\uc5b4\uc8fc\uc138\uc694';
-    }, 2000);
+      document.getElementById('scanner-status').textContent = '✅ 스캐너 대기 중 — QR을 찍어주세요';
+      document.getElementById('scanner-input').focus();
+    }, 3000);
     return;
   }
   if(!data.lot){
