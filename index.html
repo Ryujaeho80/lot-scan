@@ -193,7 +193,7 @@ let recentLocal = [];
 // ── 서버 연결 확인 ──
 async function checkConn() {
   try {
-    const r = await fetch(API+'?action=get');
+    const r = await fetch(API+'?action=get', {redirect:'follow'});
     if(r.ok){ setConn(true); loadRecent(); }
     else setConn(false);
   } catch { setConn(false); }
@@ -290,7 +290,7 @@ async function confirmReg(force){
       action:'write', lot, product, qty, type:scanType, worker:'', note:'', wt,
       force: force ? '1' : '0'
     });
-    const r = await fetch(API + '?' + params.toString());
+    const r = await fetch(API + '?' + params.toString(), {redirect:'follow'});
     const result = await r.json();
 
     if(result.duplicate){
@@ -349,7 +349,7 @@ async function manualReg(){
   try{
     showToast('⏳ 등록 중...');
     const params=new URLSearchParams({action:'write',lot,product,qty,type:scanType,worker:'',note:''});
-    const r=await fetch(API+'?'+params.toString());
+    const r=await fetch(API+'?'+params.toString(), {redirect:'follow'});
     const result=await r.json();
     if(result.ok){ showToast(scanType==='out'?'✅ 출고 등록':'✅ 입고 등록'); loadRecent(); document.getElementById('m-lot').value=''; }
     else showToast('❌ 서버 오류');
@@ -359,14 +359,14 @@ async function manualReg(){
 // ── 최근 이력 ──
 async function loadRecent(){
   try{
-    const r=await fetch(API+'?action=get');
+    const r=await fetch(API+'?action=get', {redirect:'follow'});
     const data=await r.json();
     const recent=data.slice(-5).reverse();
     document.getElementById('recent-list').innerHTML=recent.map(x=>`
       <div class="recent-item">
         <span class="ri-lot">${x.lot}</span>
         <span class="${x.type==='out'?'ri-type-out':'ri-type-in'}">${x.type==='out'?'출고':'입고'}</span>
-        <span class="ri-time">${x.date.slice(5,16)}</span>
+        <span class="ri-time">${new Date(x.date).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>
       </div>`).join('') || '<div style="color:rgba(255,255,255,.3);font-size:11px;">없음</div>';
   } catch {}
 }
