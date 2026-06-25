@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>LOT \uc2a4\uce94</title>
+<title>LOT 스캔</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
   :root{--navy:#0d1b3e;--red:#e53935;--blue:#1565c0;--green:#2e7d32;--gold:#f9a825;}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   body{font-family:'Noto Sans KR',sans-serif;background:#0d1b3e;color:white;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 
-  /* \ud5e4\ub354 */
   .hdr{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
   .hdr-title{font-size:17px;font-weight:900;}
   .hdr-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
@@ -18,7 +17,6 @@
   .conn-dot.ok{background:#4caf50;box-shadow:0 0 6px #4caf50;}
   .conn-dot.err{background:var(--red);}
 
-  /* \ud0c0\uc785 \uc120\ud0dd */
   .type-row{display:flex;gap:12px;padding:0 16px 14px;flex-shrink:0;}
   .type-btn{flex:1;padding:16px 8px;border-radius:16px;border:2.5px solid;font-size:16px;font-weight:900;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .2s;text-align:center;}
   .type-btn.out{border-color:var(--red);color:var(--red);background:rgba(229,57,53,.08);}
@@ -26,16 +24,14 @@
   .type-btn.in{border-color:#42a5f5;color:#42a5f5;background:rgba(66,165,245,.08);}
   .type-btn.in.active{background:#1565c0;color:white;box-shadow:0 4px 20px rgba(21,101,192,.4);}
 
-  /* \ud0ed */
   .tab-row{display:flex;padding:0 16px;flex-shrink:0;border-bottom:2px solid rgba(255,255,255,.1);}
   .tab-btn{flex:1;padding:9px 4px;background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border-bottom:3px solid transparent;margin-bottom:-2px;}
   .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
 
-  /* QR \ud0ed \ucf58\ud150\uce20 */
+  /* QR 탭 컨테이너 */
   .qr-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
   .qr-wrap.hide{display:none;}
 
-  /* \uce74\uba54\ub77c */
   .cam-area{flex:1;position:relative;background:#000;overflow:hidden;}
   #video{width:100%;height:100%;object-fit:cover;display:block;}
   .cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
@@ -50,7 +46,6 @@
   @keyframes scanMove{0%{transform:translateY(-100px);}100%{transform:translateY(100px);}}
   .cam-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.6);}
 
-  /* \uc218\ub3d9 \uc785\ub825 */
   .manual-toggle{padding:10px 16px;flex-shrink:0;}
   .btn-manual-toggle{width:100%;padding:11px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.7);font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
   .manual-panel{padding:0 16px 12px;display:none;flex-shrink:0;}
@@ -66,7 +61,6 @@
   .btn-manual-reg.out{background:var(--red);}
   .btn-manual-reg.in{background:var(--blue);}
 
-  /* \ud558\ub2e8 \ucd5c\uadfc\uc774\ub825 */
   .recent-bar{background:rgba(0,0,0,.4);padding:8px 16px;flex-shrink:0;max-height:90px;overflow-y:auto;}
   .recent-title{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;letter-spacing:1px;}
   .recent-item{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06);}
@@ -75,7 +69,7 @@
   .ri-type-in{color:#42a5f5;font-weight:700;}
   .ri-time{color:rgba(255,255,255,.35);}
 
-  /* \ubc14\ucf54\ub4dc \ud0ed \ucf58\ud150\uce20 */
+  /* 바코드 탭 컨테이너 */
   .bc-wrap{flex:1;display:none;flex-direction:column;overflow:hidden;}
   .bc-wrap.show{display:flex;}
   .bc-panel{padding:12px 16px 8px;flex-shrink:0;background:rgba(255,255,255,.04);}
@@ -84,7 +78,6 @@
   .bc-input::placeholder{color:rgba(255,255,255,.3);font-size:12px;letter-spacing:0;}
   .bc-input:focus{border-color:#fff;}
 
-  /* \uc774\ub825 \ud53c\ub4dc */
   .bc-feed{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;min-height:0;}
   .bc-feed-empty{color:rgba(255,255,255,.25);font-size:14px;text-align:center;margin-top:60px;line-height:2.2;}
   .bc-feed-item{background:rgba(255,255,255,.09);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;animation:fadeIn .2s ease;flex-shrink:0;}
@@ -100,7 +93,6 @@
   .bc-fi-in{border-left:5px solid #42a5f5;}
   .bc-fi-err{border-left:5px solid #f9a825;opacity:.7;}
 
-  /* \ubaa8\ub2ec */
   .result-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:flex-end;justify-content:center;}
   .result-modal.show{display:flex;}
   .result-sheet{background:#1a2340;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 36px;animation:slideUp .3s ease;}
@@ -120,35 +112,31 @@
   .rs-btn-ok.out{background:var(--red);}
   .rs-btn-ok.in{background:var(--blue);}
 
-  /* \ud1a0\uc2a4\ud2b8 */
   .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
   .toast.show{opacity:1;}
 </style>
 </head>
 <body>
 
-<!-- \ud5e4\ub354 -->
 <div class="hdr">
   <div>
-    <div class="hdr-title">\ud83d\udce6 LOT \uc2a4\uce94</div>
-    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">\uc11c\ubc84 \uc5f0\uacb0 \uc911...</span></div>
+    <div class="hdr-title">📦 LOT 스캔</div>
+    <div class="hdr-sub"><span class="conn-dot" id="conn-dot"></span><span id="conn-status">서버 연결 중...</span></div>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">\ud638\uc5f0\ud14c\ud06c<br>\uc678\uc8fc \uc785\ucd9c\uace0</div>
+  <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:right;">호연테크<br>외주 입출고</div>
 </div>
 
-<!-- \ud0c0\uc785 \uc120\ud0dd -->
 <div class="type-row">
-  <button class="type-btn out active" id="btn-out" onclick="setType('out')">\ud83d\udd34 \ucd9c \uace0</button>
-  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">\ud83d\udd35 \uc785 \uace0</button>
+  <button class="type-btn out active" id="btn-out" onclick="setType('out')">🔴 출 고</button>
+  <button class="type-btn in"         id="btn-in"  onclick="setType('in')">🔵 입 고</button>
 </div>
 
-<!-- \ud0ed -->
 <div class="tab-row">
-  <button class="tab-btn active" id="tab-qr" onclick="switchTab('qr')">\ud83d\udcf7 QR \uce74\uba54\ub77c</button>
-  <button class="tab-btn"        id="tab-bc" onclick="switchTab('bc')">\ud83d\udd26 \ubc14\ucf54\ub4dc \uc2a4\uce90\ub108</button>
+  <button class="tab-btn active" id="tab-qr" onclick="switchTab('qr')">📷 QR 카메라</button>
+  <button class="tab-btn"        id="tab-bc" onclick="switchTab('bc')">🔦 바코드 스캐너</button>
 </div>
 
-<!-- QR \ud0ed \ucf58\ud150\uce20 -->
+<!-- QR 탭 -->
 <div class="qr-wrap" id="qr-wrap">
   <div class="cam-area">
     <video id="video" playsinline autoplay muted></video>
@@ -159,71 +147,70 @@
         <div class="scan-line"></div>
       </div>
     </div>
-    <div class="cam-hint">QR \ucf54\ub4dc\ub97c \uc0ac\uac01\ud615 \uc548\uc5d0 \ub9de\ucdb0\uc8fc\uc138\uc694</div>
+    <div class="cam-hint">QR 코드를 사각형 안에 맞춰주세요</div>
   </div>
   <div class="manual-toggle">
-    <button class="btn-manual-toggle" onclick="toggleManual()">\u270f\ufe0f QR \uc5c6\uc774 \uc9c1\uc811 \uc785\ub825</button>
+    <button class="btn-manual-toggle" onclick="toggleManual()">✏️ QR 없이 직접 입력</button>
   </div>
   <div class="manual-panel" id="manual-panel">
     <div class="mp-grid">
-      <div class="mp-group full"><div class="mp-label">LOT \ubc88\ud638</div>
+      <div class="mp-group full"><div class="mp-label">LOT 번호</div>
         <input class="mp-input" id="m-lot" placeholder="26-5M-1W-05-01" autocomplete="off"></div>
-      <div class="mp-group full"><div class="mp-label">\ud488\uba85</div>
+      <div class="mp-group full"><div class="mp-label">품명</div>
         <input class="mp-input" id="m-product" placeholder="R4T-16P-S-ASSY"></div>
-      <div class="mp-group full"><div class="mp-label">\uc218\ub7c9 (EA)</div>
+      <div class="mp-group full"><div class="mp-label">수량 (EA)</div>
         <input class="mp-input" type="number" id="m-qty" placeholder="300"></div>
     </div>
-    <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">\ud83d\udd34 \ucd9c\uace0 \ub4f1\ub85d</button>
+    <button class="btn-manual-reg out" id="btn-manual-reg" onclick="manualReg()">🔴 출고 등록</button>
   </div>
   <div class="recent-bar">
-    <div class="recent-title">\ucd5c\uadfc \ub4f1\ub85d</div>
+    <div class="recent-title">최근 등록</div>
     <div id="recent-list"></div>
   </div>
 </div>
 
-<!-- \ubc14\ucf54\ub4dc \ud0ed \ucf58\ud150\uce20 -->
+<!-- 바코드 탭 -->
 <div class="bc-wrap" id="bc-wrap">
   <div class="bc-panel">
-    <div class="bc-hint">\ud83d\udd26 \ube14\ub8e8\ud22f\uc2a4 \uc2a4\uce90\ub108\ub97c \uc5f0\uacb0 \ud6c4 \ubc14\ucf54\ub4dc\ub97c \uc2a4\uce94\ud558\uc138\uc694</div>
-    <input class="bc-input" id="bc-input" placeholder="\uc2a4\uce94 \ub300\uae30 \uc911..." autocomplete="off" autocorrect="off" spellcheck="false" inputmode="none" lang="en">
+    <div class="bc-hint">🔦 블루투스 스캐너를 연결 후 바코드를 스캔하세요</div>
+    <input class="bc-input" id="bc-input" placeholder="스캔 대기 중..." autocomplete="off" autocorrect="off" spellcheck="false" inputmode="none" lang="en">
   </div>
   <div class="bc-feed" id="bc-feed">
-    <div class="bc-feed-empty" id="bc-feed-empty">\ud83d\udd26 \uc2a4\uce94\ud558\uba74 \uc5ec\uae30\uc5d0 \uc774\ub825\uc774 \ud45c\uc2dc\ub429\ub2c8\ub2e4</div>
+    <div class="bc-feed-empty" id="bc-feed-empty">🔦 스캔하면 여기에 이력이 표시됩니다</div>
   </div>
 </div>
 
-<!-- \uc911\ubcf5 \uacbd\uace0 \ubaa8\ub2ec -->
+<!-- 중복 경고 모달 -->
 <div class="result-modal" id="dup-modal">
   <div class="result-sheet" style="border-top:4px solid #f9a825;">
-    <div class="rs-icon">\u26a0\ufe0f</div>
-    <div class="rs-title" style="color:#f9a825;">\uc774\ubbf8 \ub4f1\ub85d\ub41c LOT</div>
+    <div class="rs-icon">⚠️</div>
+    <div class="rs-title" style="color:#f9a825;">이미 등록된 LOT</div>
     <div class="rs-info" style="font-size:13px;line-height:2;text-align:left;">
       <div><span style="color:rgba(255,255,255,.5)">LOT &nbsp;</span><strong id="dup-lot" style="font-family:monospace;"></strong></div>
-      <div><span style="color:rgba(255,255,255,.5)">\ub4f1\ub85d\uc77c &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
-      <div><span style="color:rgba(255,255,255,.5)">\uad6c\ubd84 &nbsp;</span><span id="dup-type"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)">등록일 &nbsp;</span><span id="dup-date" style="color:#f9a825;font-size:12px;"></span></div>
+      <div><span style="color:rgba(255,255,255,.5)">구분 &nbsp;</span><span id="dup-type"></span></div>
     </div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">\uadf8\ub798\ub3c4 \ub4f1\ub85d\ud558\uc2dc\uaca0\uc2b5\ub2c8\uae4c?</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;">그래도 등록하시겠습니까?</div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelDup()">\ucde8\uc18c</button>
-      <button class="rs-btn-ok" style="background:#f9a825;color:#000;" onclick="forceReg()">\u26a0\ufe0f \uac15\uc81c \ub4f1\ub85d</button>
+      <button class="rs-btn-cancel" onclick="cancelDup()">취소</button>
+      <button class="rs-btn-ok" style="background:#f9a825;color:#000;" onclick="forceReg()">⚠️ 강제 등록</button>
     </div>
   </div>
 </div>
 
-<!-- \uacb0\uacfc \ubaa8\ub2ec -->
+<!-- 결과 모달 -->
 <div class="result-modal" id="result-modal">
   <div class="result-sheet">
-    <div class="rs-icon" id="rs-icon">\ud83d\udce4</div>
-    <div class="rs-title out" id="rs-title">\ucd9c\uace0 \ub4f1\ub85d</div>
+    <div class="rs-icon" id="rs-icon">📤</div>
+    <div class="rs-title out" id="rs-title">출고 등록</div>
     <div class="rs-info" id="rs-info"></div>
     <div class="rs-btns">
-      <button class="rs-btn-cancel" onclick="cancelScan()">\ucde8\uc18c</button>
-      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">\u2705 \ub4f1\ub85d \uc644\ub8cc</button>
+      <button class="rs-btn-cancel" onclick="cancelScan()">취소</button>
+      <button class="rs-btn-ok out" id="rs-btn-ok" onclick="confirmReg()">✅ 등록 완료</button>
     </div>
   </div>
 </div>
 
-<!-- \ud1a0\uc2a4\ud2b8 -->
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -233,7 +220,7 @@ let scanType = 'out';
 let scanning = true;
 let pendingData = null;
 
-// \uc11c\ubc84 \uc5f0\uacb0
+// ── 서버 연결 확인 ──
 async function checkConn(){
   try{
     const r=await fetch(API+'?action=get',{redirect:'follow'});
@@ -247,7 +234,7 @@ function setConn(ok){
 checkConn();
 setInterval(checkConn,10000);
 
-// \ud0c0\uc785 \uc120\ud0dd
+// ── 타입 선택 ──
 function setType(t){
   scanType=t;
   document.getElementById('btn-out').classList.toggle('active',t==='out');
@@ -257,7 +244,7 @@ function setType(t){
   mb.textContent=t==='out'?'\ud83d\udd34 \ucd9c\uace0 \ub4f1\ub85d':'\ud83d\udd35 \uc785\uace0 \ub4f1\ub85d';
 }
 
-// \uce74\uba54\ub77c
+// ── 카메라 ──
 const video=document.getElementById('video');
 const canvas=document.createElement('canvas');
 const ctx=canvas.getContext('2d');
@@ -278,7 +265,7 @@ function tick(){
   requestAnimationFrame(tick);
 }
 
-// \ud0ed \uc804\ud658
+// ── 탭 전환 ──
 function switchTab(tab){
   const isQR=tab==='qr';
   document.getElementById('tab-qr').classList.toggle('active',isQR);
@@ -297,7 +284,7 @@ function switchTab(tab){
   }
 }
 
-// QR/\ubc14\ucf54\ub4dc \uacf5\ud1b5 \uc785\ub825 \ucc98\ub9ac
+// ── QR/바코드 공통 입력 처리 ──
 function onQR(raw){
   scanning=false;
   let data={};
@@ -315,17 +302,17 @@ function onQR(raw){
   else showResult(data);
 }
 
-// \uacb0\uacfc \ubaa8\ub2ec (QR \ud0ed\uc6a9)
+// ── 결과 모달 (QR 탭용) ──
 function showResult(data){
   const isOut=scanType==='out';
-  document.getElementById('rs-icon').textContent=isOut?'\ud83d\udce4':'\ud83d\udce5';
+  document.getElementById('rs-icon').textContent=isOut?'📤':'📥';
   const title=document.getElementById('rs-title');
   title.textContent=isOut?'\ucd9c\uace0 \ub4f1\ub85d \ud655\uc778':'\uc785\uace0 \ub4f1\ub85d \ud655\uc778';
   title.className='rs-title '+(isOut?'out':'in');
   document.getElementById('rs-info').innerHTML=`
-    <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'\u2014'}</span></div>
-    <div class="rs-row"><span class="rs-key">\ud488\uba85</span><span class="rs-val">${data.product||'\u2014'}</span></div>
-    <div class="rs-row"><span class="rs-key">\uc218\ub7c9</span><span class="rs-val">${data.qty||'\u2014'} EA</span></div>
+    <div class="rs-row"><span class="rs-key">LOT</span><span class="rs-val">${data.lot||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">\ud488\uba85</span><span class="rs-val">${data.product||'—'}</span></div>
+    <div class="rs-row"><span class="rs-key">\uc218\ub7c9</span><span class="rs-val">${data.qty||'—'} EA</span></div>
     ${data.wt?`<div class="rs-row"><span class="rs-key">\uc791\uc5c5\ud615\ud0dc</span><span class="rs-val" style="color:#f9a825">${data.wt}</span></div>`:''}
     <div class="rs-row"><span class="rs-key">\uad6c\ubd84</span><span class="rs-val" style="color:${isOut?'#ef5350':'#42a5f5'}">${isOut?'\ucd9c\uace0':'\uc785\uace0'}</span></div>`;
   const ok=document.getElementById('rs-btn-ok');
@@ -340,6 +327,7 @@ function cancelScan(){
   setTimeout(()=>scanning=true,1500);
 }
 
+// ── 등록 ──
 async function confirmReg(force){
   if(!pendingData)return;
   const snap=pendingData;
@@ -398,7 +386,7 @@ function forceReg(){
   confirmReg(true);
 }
 
-// \uc218\ub3d9 \uc785\ub825
+// ── 수동 입력 ──
 function toggleManual(){document.getElementById('manual-panel').classList.toggle('show');}
 async function manualReg(){
   const lot=document.getElementById('m-lot').value.trim().toUpperCase();
@@ -415,7 +403,7 @@ async function manualReg(){
   }catch{showToast('\u274c \ub124\ud2b8\uc6cc\ud06c \uc624\ub958');}
 }
 
-// \ucd5c\uadfc \uc774\ub825 (\uc11c\ubc84)
+// ── 최근 이력 ──
 async function loadRecent(){
   try{
     const r=await fetch(API+'?action=get',{redirect:'follow'});
@@ -430,7 +418,7 @@ async function loadRecent(){
   }catch{}
 }
 
-// \ubc14\ucf54\ub4dc \ud53c\ub4dc \ucd94\uac00
+// ── 바코드 피드 추가 ──
 function addBcFeed(data,ok,errMsg){
   const feed=document.getElementById('bc-feed');
   const empty=document.getElementById('bc-feed-empty');
@@ -438,25 +426,23 @@ function addBcFeed(data,ok,errMsg){
   const isOut=scanType==='out';
   const now=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const cls=ok?(isOut?'bc-fi-out':'bc-fi-in'):'bc-fi-err';
-  const icon=ok?(isOut?'\ud83d\udce4':'\ud83d\udce5'):'\u26a0\ufe0f';
+  const icon=ok?(isOut?'📤':'📥'):'⚠️';
   const item=document.createElement('div');
   item.className='bc-feed-item '+cls;
   item.innerHTML=`
     <div class="bc-fi-icon">${icon}</div>
     <div class="bc-fi-body">
-      <div class="bc-fi-lot">${data.lot||'\u2014'}</div>
-      <div class="bc-fi-product">${data.product||errMsg||'\u2014'}</div>
+      <div class="bc-fi-lot">${data.lot||'—'}</div>
+      <div class="bc-fi-product">${data.product||errMsg||'—'}</div>
     </div>
     <div class="bc-fi-right">
-      <div class="bc-fi-qty" style="color:${ok?(isOut?'#ef5350':'#42a5f5'):'#f9a825'}">${ok?(data.qty||0)+' EA':'\uc624\ub958'}</div>
+      <div class="bc-fi-qty" style="color:${ok?(isOut?'#ef5350':'#42a5f5'):'#f9a825'}">${ok?(data.qty||0)+' EA':'오류'}</div>
       <div class="bc-fi-time">${now}</div>
     </div>`;
-  // \ucd5c\uc2e0\uc774 \uc704\ub85c
-  const first=feed.children[1]||null;
-  feed.insertBefore(item,first);
+  feed.insertBefore(item,feed.children[1]||null);
 }
 
-// \ubc14\ucf54\ub4dc \uc2a4\uce90\ub108 \uc785\ub825 (\ud55c\uae00 IME \uc644\uc804 \uc6b0\ud68c)
+// ── 바코드 스캐너 입력 (한글 IME 완전 우회) ──
 (function(){
   const bcInput=document.getElementById('bc-input');
   if(!bcInput)return;
@@ -477,6 +463,7 @@ function addBcFeed(data,ok,errMsg){
   });
 })();
 
+// ── 토스트 ──
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
