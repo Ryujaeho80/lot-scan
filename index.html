@@ -378,6 +378,7 @@ async function confirmReg(force){
 function cancelDup(){
   document.getElementById('dup-modal').classList.remove('show');
   pendingData=null;
+  scanning=true;
   setTimeout(()=>scanning=true,500);
 }
 
@@ -454,13 +455,25 @@ function addBcFeed(data,ok,errMsg){
       onQR(val);
     }
   }
+  let needInputFallback=false;
   bcInput.addEventListener('keydown',function(e){
     if(e.key==='Enter'){e.preventDefault();fire();return;}
     if(e.key==='Backspace'){e.preventDefault();buf=buf.slice(0,-1);bcInput.value=buf;return;}
     if(e.key.length===1){
       e.preventDefault();
+      needInputFallback=false;
       buf+=e.key;bcInput.value=buf;
+    }else if(e.key==='Process'||e.key==='Unidentified'){
+      // 안드로이드 IME 조합 모드 — input 이벤트로 fallback
+      needInputFallback=true;
     }
+  });
+  // 안드로이드 블루투스 스캐너 fallback: keydown에서 못 잡은 문자를 input 이벤트로 수신
+  bcInput.addEventListener('input',function(e){
+    if(!needInputFallback)return;
+    needInputFallback=false;
+    const ch=e.data;
+    if(ch&&ch!=='\n'&&ch!=='\r'){buf+=ch;bcInput.value=buf;}
   });
   // 한글 IME 조합 차단 (안드로이드 대비)
   bcInput.addEventListener('compositionstart',function(e){e.preventDefault();});
