@@ -480,6 +480,21 @@ function addBcFeed(data,ok,errMsg){
   // 한글 IME 조합 차단 (안드로이드 대비)
   bcInput.addEventListener('compositionstart',function(e){e.preventDefault();});
   bcInput.addEventListener('compositionend',function(e){e.preventDefault();bcInput.value=buf;});
+
+  // ── 포커스 자동 복구 ──
+  // 바코드 탭 활성 중 화면 어디를 터치해도 bc-input으로 포커스 복귀
+  function refocusBcInput(){
+    const isBcActive=document.getElementById('tab-bc').classList.contains('active');
+    // 모달이 열려 있을 땐 포커스 이동하지 않음
+    const modalOpen=document.getElementById('dup-modal').classList.contains('show')
+                  ||document.getElementById('result-modal').classList.contains('show');
+    if(isBcActive&&!modalOpen){bcInput.focus();}
+  }
+  document.getElementById('bc-wrap').addEventListener('click',function(){refocusBcInput();});
+  // 화면 복귀(백그라운드→포그라운드) 시에도 포커스 복구
+  document.addEventListener('visibilitychange',function(){
+    if(!document.hidden)setTimeout(refocusBcInput,200);
+  });
 })();
 
 // ── 토스트 ──
