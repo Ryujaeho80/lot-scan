@@ -348,6 +348,8 @@ async function confirmReg(force){
       document.getElementById('dup-date').textContent=res.existingDate||'-';
       document.getElementById('dup-type').textContent=res.type||'-';
       document.getElementById('dup-modal').classList.add('show');
+      const isBcDup=document.getElementById('tab-bc').classList.contains('active');
+      if(isBcDup){const i=document.getElementById('bc-input');if(i){i.value='';i.focus();}}
       return;
     }
     if(res.ok){
