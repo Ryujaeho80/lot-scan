@@ -330,13 +330,15 @@ function cancelScan(){
 
 async function confirmReg(force){
   if(!pendingData) return;
-  const lot     = pendingData.lot     || '';
-  const product = pendingData.product || '';
-  const qty     = pendingData.qty     || 0;
+  const snapshot = pendingData; // 즉시 복사
+  pendingData = null;           // 바로 초기화 → 다음 스캔 즉시 받을 수 있음
+  const lot     = snapshot.lot     || '';
+  const product = snapshot.product || '';
+  const qty     = snapshot.qty     || 0;
   if(!lot){ showToast('⚠️ LOT 정보 없음'); return; }
   try{
     showToast('⏳ 등록 중...');
-    const wt = pendingData.wt || '';
+    const wt = snapshot.wt || '';
     const params = new URLSearchParams({
       action:'write', lot, product, qty, type:scanType, worker:'', note:'', wt,
       force: force ? '1' : '0'
@@ -356,8 +358,7 @@ async function confirmReg(force){
       showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
       loadRecent();
       const isBcTab = document.getElementById('tab-bc').classList.contains('active');
-      if(isBcTab) addBcFeed(pendingData, true, '');
-      pendingData=null;
+      if(isBcTab) addBcFeed(snapshot, true, '');
       const delay = isBcTab ? 300 : 2000;
       setTimeout(()=>{
         scanning=true;
@@ -366,13 +367,13 @@ async function confirmReg(force){
     } else {
       showToast('❌ 오류: '+(result.error||''));
       const isBcTab2 = document.getElementById('tab-bc').classList.contains('active');
-      if(isBcTab2 && pendingData) addBcFeed(pendingData, false, result.error||'서버 오류');
+      if(isBcTab2) addBcFeed(snapshot, false, result.error||'서버 오류');
       scanning=true;
     }
   } catch(e) {
     showToast('❌ 네트워크 오류');
     const isBcTab3 = document.getElementById('tab-bc').classList.contains('active');
-    if(isBcTab3 && pendingData) addBcFeed(pendingData, false, '네트워크 오류');
+    if(isBcTab3) addBcFeed(snapshot, false, '네트워크 오류');
     scanning=true;
   }
 }
