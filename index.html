@@ -274,7 +274,10 @@ function onQR(raw){
     data={lot:lm?lm[1]:raw.trim(),product:pm?pm[1]:'',qty:qm?parseInt(qm[1]):0,wt:wm?wm[1]:''};
   }
   pendingData=data;
-  showResult(data);
+  // 바코드 탭이면 모달 없이 바로 등록
+  const isBcTab = document.getElementById('tab-bc').classList.contains('active');
+  if(isBcTab){ confirmReg(false); }
+  else { showResult(data); }
 }
 
 // ── 결과 모달 ──
@@ -330,7 +333,12 @@ async function confirmReg(force){
       showToast(scanType==='out'?'✅ 출고 등록 완료':'✅ 입고 등록 완료');
       loadRecent();
       pendingData=null;
-      setTimeout(()=>scanning=true, 2000);
+      const isBcTab = document.getElementById('tab-bc').classList.contains('active');
+      const delay = isBcTab ? 300 : 2000; // 바코드 탭은 300ms 후 바로 대기
+      setTimeout(()=>{
+        scanning=true;
+        if(isBcTab){ const inp=document.getElementById('bc-input'); if(inp){ inp.value=''; inp.focus(); } }
+      }, delay);
     } else {
       showToast('❌ 오류: '+(result.error||''));
       scanning=true;
