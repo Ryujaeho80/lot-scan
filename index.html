@@ -457,8 +457,9 @@ function addBcFeed(data,ok,errMsg){
     if(e.key.length===1){
       e.preventDefault();
       buf+=e.key;bcInput.value=buf;
+      // 타이머는 Enter가 없는 스캐너 대비 500ms 여유있게 유지
       clearTimeout(timer);
-      timer=setTimeout(fire,300);
+      timer=setTimeout(fire,500);
     }
   });
 })();
