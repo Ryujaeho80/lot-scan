@@ -469,11 +469,14 @@ function addBcFeed(data,ok,errMsg){
     }
   });
   // 안드로이드 블루투스 스캐너 fallback: keydown에서 못 잡은 문자를 input 이벤트로 수신
+  // e.data는 IME가 한글로 변환한 값일 수 있으므로 영문/숫자/특수문자만 추출
   bcInput.addEventListener('input',function(e){
     if(!needInputFallback)return;
     needInputFallback=false;
-    const ch=e.data;
-    if(ch&&ch!=='\n'&&ch!=='\r'){buf+=ch;bcInput.value=buf;}
+    // bcInput.value 전체에서 ASCII 영문/숫자/기호만 남김 (한글·한자 등 CJK 제거)
+    const cleaned=bcInput.value.replace(/[^\x20-\x7E]/g,'');
+    buf=cleaned;
+    bcInput.value=cleaned;
   });
   // 한글 IME 조합 차단 (안드로이드 대비)
   bcInput.addEventListener('compositionstart',function(e){e.preventDefault();});
