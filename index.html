@@ -356,20 +356,18 @@ async function confirmReg(force){
       loadRecent();
       const isBc=document.getElementById('tab-bc').classList.contains('active');
       if(isBc)addBcFeed(snap,true,'');
-      setTimeout(()=>{
-        scanning=true;
-        if(isBc){const i=document.getElementById('bc-input');if(i){i.value='';i.focus();}}
-      },isBc?300:2000);
+      scanning=true;
+      if(isBc){const i=document.getElementById('bc-input');if(i){i.value='';i.focus();}}
     }else{
       showToast('\u274c \uc624\ub958: '+(res.error||''));
       const isBc=document.getElementById('tab-bc').classList.contains('active');
-      if(isBc)addBcFeed(snap,false,res.error||'\uc11c\ubc84 \uc624\ub958');
+      if(isBc){addBcFeed(snap,false,res.error||'\uc11c\ubc84 \uc624\ub958');const i=document.getElementById('bc-input');if(i)i.focus();}
       scanning=true;
     }
   }catch(e){
     showToast('\u274c \ub124\ud2b8\uc6cc\ud06c \uc624\ub958');
     const isBc=document.getElementById('tab-bc').classList.contains('active');
-    if(isBc)addBcFeed(snap,false,'\ub124\ud2b8\uc6cc\ud06c \uc624\ub958');
+    if(isBc){addBcFeed(snap,false,'\ub124\ud2b8\uc6cc\ud06c \uc624\ub958');const i=document.getElementById('bc-input');if(i)i.focus();}
     scanning=true;
   }
 }
