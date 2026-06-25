@@ -415,21 +415,24 @@ document.addEventListener('DOMContentLoaded', function(){
   if(!bcInput) return;
   // keydown에서 직접 문자 조합 → 한글 변환 완전 우회
   let bcBuffer = '';
+  let bcTimer = null;
+  function bcFire(){
+    const val = bcBuffer.trim();
+    bcBuffer = '';
+    bcInput.value = '';
+    if(!val) return;
+    onQR(val);
+  }
   bcInput.addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      const val = bcBuffer.trim();
-      bcBuffer = '';
-      bcInput.value = '';
-      if(!val) return;
-      onQR(val);
-      return;
-    }
+    if(e.key === 'Enter'){ e.preventDefault(); clearTimeout(bcTimer); bcFire(); return; }
     if(e.key === 'Backspace'){ bcBuffer = bcBuffer.slice(0,-1); bcInput.value = bcBuffer; return; }
-    if(e.key.length === 1){ // 단일 문자만 (Shift, Ctrl 등 제외)
+    if(e.key.length === 1){
       e.preventDefault();
       bcBuffer += e.key;
       bcInput.value = bcBuffer;
+      // 마지막 입력 후 100ms 뒤 자동 처리 (Enter 없어도 됨)
+      clearTimeout(bcTimer);
+      bcTimer = setTimeout(bcFire, 100);
     }
   });
 });
