@@ -286,7 +286,8 @@ function switchTab(tab){
 
 // ── QR/바코드 공통 입력 처리 ──
 function onQR(raw){
-  scanning=false;
+  const isBcTab=document.getElementById('tab-bc').classList.contains('active');
+  if(!isBcTab) scanning=false;
   let data={};
   try{data=JSON.parse(raw);}
   catch(e){
@@ -451,8 +452,6 @@ function addBcFeed(data,ok,errMsg){
     const val=buf.trim();buf='';bcInput.value='';
     if(val){
       onQR(val);
-      // 포커스 유지 — 다음 스캔 바로 받을 수 있게
-      setTimeout(()=>bcInput.focus(),50);
     }
   }
   bcInput.addEventListener('keydown',function(e){
