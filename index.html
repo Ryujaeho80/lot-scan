@@ -242,6 +242,9 @@ function setType(t){
   const mb=document.getElementById('btn-manual-reg');
   mb.className='btn-manual-reg '+t;
   mb.textContent=t==='out'?'\ud83d\udd34 \ucd9c\uace0 \ub4f1\ub85d':'\ud83d\udd35 \uc785\uace0 \ub4f1\ub85d';
+  // 바코드 탭 활성 중이면 출고/입고 전환 후 포커스 복구
+  const isBcActive=document.getElementById('tab-bc').classList.contains('active');
+  if(isBcActive){setTimeout(function(){const i=document.getElementById('bc-input');if(i)i.focus();},50);}
 }
 
 // ── 카메라 ──
