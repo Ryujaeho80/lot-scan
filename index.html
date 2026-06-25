@@ -132,7 +132,7 @@
 <!-- 바코드 입력 패널 (스캐너 탭) -->
 <div class="bc-panel" id="bc-panel">
   <div class="bc-hint">블루투스 스캐너로 바코드를 스캔하거나 직접 입력 후 Enter</div>
-  <input class="bc-input" id="bc-input" placeholder="바코드 스캔 대기 중..." autocomplete="off" autocorrect="off" spellcheck="false">
+  <input class="bc-input" id="bc-input" placeholder="바코드 스캔 대기 중..." autocomplete="off" autocorrect="off" spellcheck="false" inputmode="none" lang="en">
 </div>
 
 <!-- 카메라 -->
@@ -413,13 +413,23 @@ function switchTab(tab){
 document.addEventListener('DOMContentLoaded', function(){
   const bcInput = document.getElementById('bc-input');
   if(!bcInput) return;
+  // keydown에서 직접 문자 조합 → 한글 변환 완전 우회
+  let bcBuffer = '';
   bcInput.addEventListener('keydown', function(e){
     if(e.key === 'Enter'){
       e.preventDefault();
-      const val = bcInput.value.trim();
-      if(!val) return;
+      const val = bcBuffer.trim();
+      bcBuffer = '';
       bcInput.value = '';
-      onQR(val); // 기존 QR 처리 함수 그대로 재사용
+      if(!val) return;
+      onQR(val);
+      return;
+    }
+    if(e.key === 'Backspace'){ bcBuffer = bcBuffer.slice(0,-1); bcInput.value = bcBuffer; return; }
+    if(e.key.length === 1){ // 단일 문자만 (Shift, Ctrl 등 제외)
+      e.preventDefault();
+      bcBuffer += e.key;
+      bcInput.value = bcBuffer;
     }
   });
 });
