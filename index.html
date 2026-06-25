@@ -173,7 +173,7 @@
 <div class="bc-wrap" id="bc-wrap">
   <div class="bc-panel">
     <div class="bc-hint">🔦 블루투스 스캐너를 연결 후 바코드를 스캔하세요</div>
-    <input class="bc-input" id="bc-input" placeholder="스캔 대기 중..." autocomplete="off" autocorrect="off" spellcheck="false" inputmode="none" lang="en">
+    <input class="bc-input" id="bc-input" type="password" placeholder="스캔 대기 중..." autocomplete="new-password" autocorrect="off" spellcheck="false" inputmode="none" lang="en">
   </div>
   <div class="bc-feed" id="bc-feed">
     <div class="bc-feed-empty" id="bc-feed-empty">🔦 스캔하면 여기에 이력이 표시됩니다</div>
@@ -469,14 +469,13 @@ function addBcFeed(data,ok,errMsg){
     }
   });
   // 안드로이드 블루투스 스캐너 fallback: keydown에서 못 잡은 문자를 input 이벤트로 수신
-  // e.data는 IME가 한글로 변환한 값일 수 있으므로 영문/숫자/특수문자만 추출
+  // type="password"로 IME 차단 후 e.data가 ASCII 원문으로 오면 그대로 사용
+  // 혹시 남아있는 비ASCII 문자는 한 번 더 필터링
   bcInput.addEventListener('input',function(e){
     if(!needInputFallback)return;
     needInputFallback=false;
-    // bcInput.value 전체에서 ASCII 영문/숫자/기호만 남김 (한글·한자 등 CJK 제거)
-    const cleaned=bcInput.value.replace(/[^\x20-\x7E]/g,'');
-    buf=cleaned;
-    bcInput.value=cleaned;
+    const ch=(e.data||'').replace(/[^\x20-\x7E]/g,'');
+    if(ch){buf+=ch;bcInput.value=buf;}
   });
   // 한글 IME 조합 차단 (안드로이드 대비)
   bcInput.addEventListener('compositionstart',function(e){e.preventDefault();});
